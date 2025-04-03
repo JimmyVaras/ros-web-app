@@ -48,7 +48,7 @@ export default function DetectionsPage() {
               <td>
                 <div role="group">
                   <button type="submit">Navigate🚀</button>
-                  <button class="secondary">Remove🗑️</button>
+                  <button className="secondary">Remove🗑️</button>
                 </div>
 
               </td>
