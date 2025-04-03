@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getDetections, createDetection } from './api';
+import { getDetections } from './api';
 import type { Detection } from './api';
 import '@picocss/pico/css/pico.min.css';
 
