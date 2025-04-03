@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getDetections } from 'src/lib/api';
-import type { Detection } from 'src/lib/api';
+import { getDetections } from '../../../lib/api';
+import type { Detection } from '../../../lib/api';
 import '@picocss/pico/css/pico.min.css';
 
 
