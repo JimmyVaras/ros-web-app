@@ -34,12 +34,12 @@ db_dependency = Annotated[Session, Depends(get_db)]
 async def root():
     return {"message": "This is the root endpoint of the app, Jimmy"}
 
-@app.get("/objects/")
+@app.get("/detections/")
 async def get_all_detections(db: db_dependency):
     detections = db.query(models.Detections).all()
     return detections
 
-@app.post("/objects/")
+@app.post("/detections/")
 async def create_detections(detection: Detection, db: db_dependency):
     db_detection = models.Detections(label=detection.label, position=detection.position)
     db.add(db_detection)
