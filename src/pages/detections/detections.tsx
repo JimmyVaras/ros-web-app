@@ -14,7 +14,7 @@ export default function DetectionsPage() {
 
   const fetchDetections = async () => {
     try {
-      const apiUrl = process.env.API_BASE_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/detections`);
 
       if (!response.ok) {
@@ -32,7 +32,7 @@ export default function DetectionsPage() {
 
   const handleDelete = async (id: number) => {
     try {
-      const apiUrl = process.env.API_BASE_URL || 'http://localhost:8000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/detections?id=${id}`, {
         method: 'DELETE',
       });
@@ -68,7 +68,7 @@ export default function DetectionsPage() {
     <div className="container">
       <article className="alert alert-error" style={{marginTop: '2rem'}}>
         <header>Error</header>
-        {error}
+        {error} from {process.env.NEXT_PUBLIC_NEXT_PUBLIC_API_BASE_URL}
       </article>
     </div>
   );
@@ -78,7 +78,7 @@ export default function DetectionsPage() {
       <article style={{marginTop: '2rem'}}>
         <header style={{marginBottom: '2rem'}}>
           <h1>Object Detections</h1>
-          <p>List of all detected objects in the system at {process.env.API_BASE_URL}</p>
+          <p>List of all detected objects in the system at {process.env.NEXT_PUBLIC_API_BASE_URL}</p>
         </header>
 
         <div className="grid">
