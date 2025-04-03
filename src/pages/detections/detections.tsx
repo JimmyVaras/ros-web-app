@@ -78,7 +78,7 @@ export default function DetectionsPage() {
       <article style={{marginTop: '2rem'}}>
         <header style={{marginBottom: '2rem'}}>
           <h1>Object Detections</h1>
-          <p>List of all detected objects in the system</p>
+          <p>List of all detected objects in the system at {process.env.API_BASE_URL}</p>
         </header>
 
         <div className="grid">
