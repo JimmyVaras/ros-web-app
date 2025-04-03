@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { getDetections, createDetection } from '../services/api';
-import type { Detection } from '../services/api';
+import { getDetections, createDetection } from './api';
+import type { Detection } from './api';
+import '@picocss/pico/css/pico.min.css';
+
 
 export default function DetectionsPage() {
   const [detections, setDetections] = useState<Detection[]>([]);
@@ -34,6 +36,7 @@ export default function DetectionsPage() {
             <th>ID</th>
             <th>Label</th>
             <th>Position</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -42,6 +45,13 @@ export default function DetectionsPage() {
               <td>{detection.id}</td>
               <td>{detection.label}</td>
               <td>{detection.position}</td>
+              <td>
+                <div role="group">
+                  <button type="submit">Navigate🚀</button>
+                  <button class="secondary">Remove🗑️</button>
+                </div>
+
+              </td>
             </tr>
           ))}
         </tbody>

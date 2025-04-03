@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Annotated
@@ -7,6 +8,11 @@ from database import engine, SessionLocal
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*']
+)
 
 
 class Detection(BaseModel):
