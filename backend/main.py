@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, APIRouter
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 import models
@@ -10,7 +10,7 @@ models.Base.metadata.create_all(bind=engine)
 
 origins = [
     "https://ros-web-app-backend.onrender.com",
-    "https://ros-web-app-theta.vercel.app/",
+    "https://ros-web-app-theta.vercel.app",
     "http://localhost:3000",
     "http://localhost:8000",
 ]
