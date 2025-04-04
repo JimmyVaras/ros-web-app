@@ -33,7 +33,7 @@ export default function DetectionsPage() {
   const handleDelete = async (id: number) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/detections?id=${id}`, {
+      const response = await fetch(`${apiUrl}/detections/${id}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
