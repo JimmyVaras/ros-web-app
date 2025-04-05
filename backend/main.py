@@ -4,7 +4,6 @@ from fastapi.middleware.cors import CORSMiddleware
 import models
 from database import engine
 from routes import detections, ros
-from routes.ros import goal_publisher
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)

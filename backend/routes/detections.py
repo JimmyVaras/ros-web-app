@@ -1,14 +1,11 @@
+import math
+
 from fastapi import APIRouter, HTTPException, status, Depends
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import Annotated
+from typing import Annotated, List
 from database import SessionLocal
-import models
-
-
-class DetectionDTO(BaseModel):
-    label: str
-    position: str
+from models import Detections
 
 
 def get_db():
@@ -24,35 +21,65 @@ db_dependency = Annotated[Session, Depends(get_db)]
 router = APIRouter(prefix="/detections", tags=["detections"])
 
 
-@router.get("/")
+class MarkerPosition(BaseModel):
+    x: float
+    y: float
+    z: float
+
+
+class MarkerData(BaseModel):
+    name: str
+    position: MarkerPosition
+
+
+class MarkerList(BaseModel):
+    markers: List[MarkerData]
+
+
+def is_close(p1, p2, threshold=1):
+    """Calcula la distancia euclidiana entre dos puntos 3D."""
+    dx = p1["x"] - p2["x"]
+    dy = p1["y"] - p2["y"]
+    dz = p1["z"] - p2["z"]
+    return math.sqrt(dx ** 2 + dy ** 2 + dz ** 2) < threshold
+
+
+@router.get("")
 async def get_all_detections(db: db_dependency):
-    detections = db.query(models.Detections).all()
+    detections = db.query(Detections).all()
     return detections
 
 
-# POST endpoint with proper imports
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_detection(detection: DetectionDTO, db: db_dependency):
-    try:
-        db_detection = models.Detections(
-            label=detection.label,
-            position=detection.position
-        )
-        db.add(db_detection)
-        db.commit()
-        db.refresh(db_detection)
-        return db_detection
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error creating detection: {str(e)}"
-        )
+# POST endpoint to save detections
+@router.post("")
+def save_markers(data: MarkerList, db: Session = Depends(get_db)):
+    added_count = 0
+
+    for marker in data.markers:
+        new_pos = {
+            "x": marker.position.x,
+            "y": marker.position.y,
+            "z": marker.position.z
+        }
+
+        # Buscar detecciones existentes con el mismo label
+        existing_detections = db.query(Detections).filter_by(label=marker.name).all()
+
+        # Verificar si alguna está dentro del umbral de 0.5m
+        duplicate = any(is_close(d.position, new_pos) for d in existing_detections)
+
+        if not duplicate:
+            detection = Detections(label=marker.name, position=new_pos)
+            db.add(detection)
+            added_count += 1
+
+    db.commit()
+    return {"status": "created", "added": added_count}
 
 
 @router.delete("/{detection_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_detection(detection_id: int, db: db_dependency):
-    db_detection = db.query(models.Detections).filter(models.Detections.id == detection_id).first()
+    db_detection = db.query(Detections).filter(Detections.id == detection_id).first()
 
     if not db_detection:
         raise HTTPException(

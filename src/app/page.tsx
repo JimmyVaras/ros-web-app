@@ -12,7 +12,7 @@ export default function HomePage() {
           View Detected Objects at /detected_objects_markers
         </button>
       </Link>
-      <Link href="/detections/detections" passHref>
+      <Link href="/detections/detections/" passHref>
         <button role="button" className="secondary">
           View Stored Objects in the database
         </button>

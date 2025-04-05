@@ -8,6 +8,10 @@ from sqlalchemy.orm import Session
 import models
 from database import SessionLocal
 
+now = time.time()
+secs = int(now)
+nsecs = int((now - secs) * 1e9)
+
 
 def get_db():
     db = SessionLocal()
@@ -22,20 +26,44 @@ db_dependency = Annotated[Session, Depends(get_db)]
 router = APIRouter(prefix="/ros", tags=["ros"])
 
 
+# class ClockSubscriber:
+#     def __init__(self, client):
+#         self.client = client
+#         self.latest_time = {'secs': 0, 'nsecs': 0}
+#         self._lock = Lock()
+#         self.clock_topic = roslibpy.Topic(client, '/clock', 'rosgraph_msgs/Clock')
+#         self.clock_topic.subscribe(self._callback)
+#
+#     def _callback(self, message):
+#         with self._lock:
+#             self.latest_time = message['clock']
+#
+#     def get_time(self):
+#         with self._lock:
+#             return self.latest_time
+
+
 class RosbridgeGoalPublisher:
     def __init__(self, host='localhost', port=9090):
-        self.client = roslibpy.Ros(host=host, port=port)
+        try:
+            self.client = roslibpy.Ros(host=host, port=port)
+            self.client.run()
+        except:
+            print("error")
+        #     TODO: commented to allow starting the backend, but should handle this
+        #     raise ConnectionError("Could not connect to rosbridge server.")
+        # if not self.client.is_connected:
+        #     raise ConnectionError("Could not connect to rosbridge server.")
+
+        # self.clock = ClockSubscriber(self.client)
         self.publisher = roslibpy.Topic(self.client, '/move_base_simple/goal', 'geometry_msgs/PoseStamped')
 
     def publish_goal(self, position_dict):
-        self.client.run()
-        print(position_dict)
-        if not self.client.is_connected:
-            raise ConnectionError("Could not connect to rosbridge server.")
+        # ros_time = self.clock.get_time()
 
         message = {
             'header': {
-                'stamp': {'secs': 0, 'nsecs': 0},
+                'stamp': {'secs': 0, 'nsecs': 0},  # ros_time
                 'frame_id': 'map'
             },
             'pose': {

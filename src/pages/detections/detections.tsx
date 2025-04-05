@@ -83,7 +83,7 @@ export default function DetectionsPage() {
     <div className="container">
       <article className="alert alert-error" style={{marginTop: '2rem'}}>
         <header>Error</header>
-        {error} from {process.env.NEXT_PUBLIC_NEXT_PUBLIC_API_BASE_URL}
+        {error} from {process.env.NEXT_PUBLIC_API_BASE_URL}
       </article>
     </div>
   );
