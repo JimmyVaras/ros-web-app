@@ -24,16 +24,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     return {"message": "This is the root endpoint of the app, Jimmy"}
+
 
 api_router = APIRouter()
 api_router.include_router(detections.router)
 api_router.include_router(ros.router)
 app.include_router(api_router)
-
-# TODO check if this works or needs to be done in another way
-@app.on_event("shutdown")
-def shutdown_event():
-    goal_publisher.client.terminate()

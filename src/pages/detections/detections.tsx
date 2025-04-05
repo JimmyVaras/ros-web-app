@@ -1,14 +1,21 @@
 import {useEffect, useState} from 'react';
 import '@picocss/pico/css/pico.min.css';
 
-interface Detection {
-  id: number;
-  label: string;
-  position: string;
+
+type Position = {
+  x: number
+  y: number
+  z: number
+}
+
+type Detection = {
+  id: number
+  label: string
+  position: Position
 }
 
 export default function DetectionsPage() {
-  const [detections, setDetections] = useState<Detection[]>([]);
+  const [detections, setDetections] = useState<Detection[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
