@@ -3,7 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import models
 from database import engine
-from routes import detections
+from routes import detections, ros
+from routes.ros import goal_publisher
 
 app = FastAPI()
 models.Base.metadata.create_all(bind=engine)
@@ -29,4 +30,10 @@ async def root():
 
 api_router = APIRouter()
 api_router.include_router(detections.router)
+api_router.include_router(ros.router)
 app.include_router(api_router)
+
+# TODO check if this works or needs to be done in another way
+@app.on_event("shutdown")
+def shutdown_event():
+    goal_publisher.client.terminate()

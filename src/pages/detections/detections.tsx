@@ -45,11 +45,19 @@ export default function DetectionsPage() {
     }
   };
 
-  const handleNavigate = (id: number) => {
-    // Implement navigation logic
-    console.log(`Navigating to detection ${id}`);
-    // Or use Next.js router:
-    // router.push(`/detections/${id}`);
+  const handleNavigate = async (id: number) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/ros/${id}/navigate`, {
+        method: 'POST',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to navigate to detection');
+      }
+      await fetchDetections();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to navigate');
+    }
   };
 
   useEffect(() => {
@@ -98,7 +106,7 @@ export default function DetectionsPage() {
                   <tr key={detection.id}>
                     <td><code>{detection.id}</code></td>
                     <td><strong>{detection.label}</strong></td>
-                    <td>{detection.position}</td>
+                    <td>x: {detection.position["x"]}, y: {detection.position["y"]}, z:{detection.position["z"]}</td>
                     <td>
                       <div className="grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
                         <button

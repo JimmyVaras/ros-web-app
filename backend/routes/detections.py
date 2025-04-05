@@ -21,7 +21,7 @@ def get_db():
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
-router = APIRouter(prefix="/detections", tags=["items"])
+router = APIRouter(prefix="/detections", tags=["detections"])
 
 
 @router.get("/")

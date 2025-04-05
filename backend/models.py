@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, JSON
 from database import Base
 
 
@@ -7,4 +7,4 @@ class Detections(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     label = Column(String, index=True)
-    position = Column(String, index=True)
+    position = Column(JSON)
