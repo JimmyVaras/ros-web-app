@@ -84,7 +84,7 @@ class RosbridgeGoalPublisher:
         self.publisher.publish(roslibpy.Message(message))
 
 
-goal_publisher = RosbridgeGoalPublisher(host='localhost', port=9090)  # set your ROS host IP here
+goal_publisher = RosbridgeGoalPublisher(host='localhost', port=9090)
 
 
 # POST endpoint to navigate to the detection

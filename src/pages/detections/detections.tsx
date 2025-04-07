@@ -113,7 +113,7 @@ export default function DetectionsPage() {
                   <tr key={detection.id}>
                     <td><code>{detection.id}</code></td>
                     <td><strong>{detection.label}</strong></td>
-                    <td>x: {detection.position["x"]}, y: {detection.position["y"]}, z:{detection.position["z"]}</td>
+                    <td>x: {detection.position["x"]}, y: {detection.position["y"]}</td>
                     <td>
                       <div className="grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
                         <button
