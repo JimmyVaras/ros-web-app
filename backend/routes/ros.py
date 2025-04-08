@@ -1,12 +1,16 @@
 import time
 from typing import Annotated
 
-import roslibpy
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
 import models
 from database import SessionLocal
+import requests
+import os
+
+tunnel_url = os.getenv('TUNNEL_URL')
+token = os.getenv('TUNNEL_AUTH_TOKEN')
 
 now = time.time()
 secs = int(now)
@@ -26,65 +30,47 @@ db_dependency = Annotated[Session, Depends(get_db)]
 router = APIRouter(prefix="/ros", tags=["ros"])
 
 
-# class ClockSubscriber:
-#     def __init__(self, client):
-#         self.client = client
-#         self.latest_time = {'secs': 0, 'nsecs': 0}
-#         self._lock = Lock()
-#         self.clock_topic = roslibpy.Topic(client, '/clock', 'rosgraph_msgs/Clock')
-#         self.clock_topic.subscribe(self._callback)
-#
-#     def _callback(self, message):
-#         with self._lock:
-#             self.latest_time = message['clock']
-#
-#     def get_time(self):
-#         with self._lock:
-#             return self.latest_time
-
-
-class RosbridgeGoalPublisher:
-    def __init__(self, host='localhost', port=9090):
-        try:
-            self.client = roslibpy.Ros(host=host, port=port)
-            self.client.run()
-        except:
-            print("error")
-        #     TODO: commented to allow starting the backend, but should handle this
-        #     raise ConnectionError("Could not connect to rosbridge server.")
-        # if not self.client.is_connected:
-        #     raise ConnectionError("Could not connect to rosbridge server.")
-
-        # self.clock = ClockSubscriber(self.client)
-        self.publisher = roslibpy.Topic(self.client, '/move_base_simple/goal', 'geometry_msgs/PoseStamped')
-
-    def publish_goal(self, position_dict):
-        # ros_time = self.clock.get_time()
-
-        message = {
-            'header': {
-                'stamp': {'secs': 0, 'nsecs': 0},  # ros_time
-                'frame_id': 'map'
+def publish_goal(position_dict):
+    message = {
+        'header': {
+            'stamp': {'secs': 0, 'nsecs': 0},  # You can later update with real ROS time
+            'frame_id': 'map'
+        },
+        'pose': {
+            'position': {
+                'x': position_dict['x'],
+                'y': position_dict['y'],
+                'z': position_dict.get('z', 0.0)
             },
-            'pose': {
-                'position': {
-                    'x': position_dict['x'],
-                    'y': position_dict['y'],
-                    'z': position_dict.get('z', 0.0)
-                },
-                'orientation': {
-                    'x': 0.0,
-                    'y': 0.0,
-                    'z': 0.0,
-                    'w': 1.0
-                }
+            'orientation': {
+                'x': 0.0,
+                'y': 0.0,
+                'z': 0.0,
+                'w': 1.0
             }
         }
+    }
 
-        self.publisher.publish(roslibpy.Message(message))
+    print(token)
+    print(tunnel_url)
 
-
-goal_publisher = RosbridgeGoalPublisher(host='localhost', port=9090)
+    try:
+        response = requests.post(
+            tunnel_url + "/publish",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            json={
+                'topic': '/move_base_simple/goal',
+                'type': 'geometry_msgs/PoseStamped',
+                'message': message
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Goal successfully published via API.")
+    except requests.RequestException as e:
+        print(f"Failed to publish goal: {e}")
 
 
 # POST endpoint to navigate to the detection
@@ -99,9 +85,8 @@ async def navigate(detection_id: int, db: db_dependency):
         )
 
     try:
-        # position = json.loads(db_detection.position)  # fix single quotes
-        goal_publisher.publish_goal(db_detection.position)
+        publish_goal(db_detection.position)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Invalid position format: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
     return {"message": "Navigation goal published", "position": db_detection.position}

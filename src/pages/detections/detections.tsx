@@ -83,7 +83,7 @@ export default function DetectionsPage() {
     <div className="container">
       <article className="alert alert-error" style={{marginTop: '2rem'}}>
         <header>Error</header>
-        {error} from {process.env.NEXT_PUBLIC_API_BASE_URL}
+        {error}
       </article>
     </div>
   );
@@ -93,7 +93,7 @@ export default function DetectionsPage() {
       <article style={{marginTop: '2rem'}}>
         <header style={{marginBottom: '2rem'}}>
           <h1>Object Detections</h1>
-          <p>List of all detected objects in the system at {process.env.NEXT_PUBLIC_API_BASE_URL}</p>
+          <p>List of all detected objects in the database</p>
         </header>
 
         <div className="grid">
