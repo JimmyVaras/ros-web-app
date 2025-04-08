@@ -2,3 +2,4 @@ fastapi[all]
 sqlalchemy
 psycopg2
 roslibpy
+requests
