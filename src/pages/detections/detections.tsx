@@ -18,6 +18,9 @@ export default function DetectionsPage() {
   const [detections, setDetections] = useState<Detection[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isListening, setIsListening] = useState(false);
+  const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognition | null>(null);
+
 
   const fetchDetections = async () => {
     try {
@@ -67,9 +70,60 @@ export default function DetectionsPage() {
     }
   };
 
+
   useEffect(() => {
     fetchDetections();
   }, []);
+
+  useEffect(() => {
+    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) {
+      console.warn('Speech recognition not supported in this browser.');
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+      console.log("Heard:", transcript);
+
+      const navigateMatch = transcript.match(/navigate to (.+)/);
+      if (navigateMatch) {
+        const label = navigateMatch[1].toLowerCase();
+        const match = detections.find(d => d.label.toLowerCase() === label);
+        if (match) {
+          handleNavigate(match.id);
+        } else {
+          console.warn(`No detection found with label "${label}"`);
+        }
+      }
+    };
+
+    recognition.onerror = (e: any) => {
+      console.error("Speech recognition error", e);
+    };
+
+    setRecognitionInstance(recognition);
+
+    return () => recognition.stop();
+  }, [detections]);
+
+  useEffect(() => {
+    if (!recognitionInstance) return;
+
+    if (isListening) {
+      recognitionInstance.start();
+      console.log("Voice recognition started");
+    } else {
+      recognitionInstance.stop();
+      console.log("Voice recognition stopped");
+    }
+  }, [isListening, recognitionInstance]);
+
 
   if (isLoading) return (
     <div className="container">
@@ -94,6 +148,17 @@ export default function DetectionsPage() {
         <header style={{marginBottom: '2rem'}}>
           <h1>Object Detections</h1>
           <p>List of all detected objects in the database</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <h1>Object Detections</h1>
+            <button
+              aria-label="Toggle Voice Recognition"
+              onClick={() => setIsListening(!isListening)}
+              className={isListening ? 'contrast' : 'outline'}
+            >
+              {isListening ? '🎙️ Listening...' : '🎤 Start Voice'}
+            </button>
+          </div>
+
         </header>
 
         <div className="grid">
