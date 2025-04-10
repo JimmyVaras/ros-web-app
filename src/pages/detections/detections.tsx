@@ -129,6 +129,9 @@ export default function DetectionsPage() {
     <div className="container">
       <article aria-busy="true" style={{textAlign: 'center', marginTop: '2rem'}}>
         Loading detections...
+        <p style={{textAlign: 'center', marginTop: '1rem', fontStyle: 'italic'}}>
+          It can take up to 30 seconds if the backend server is sleeping
+        </p>
       </article>
     </div>
   );
