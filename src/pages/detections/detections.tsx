@@ -76,7 +76,7 @@ export default function DetectionsPage() {
   }, []);
 
   useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = window.SpeechRecognition || (window as Window).webkitSpeechRecognition;
     if (!SpeechRecognition) {
       console.warn('Speech recognition not supported in this browser.');
       return;
@@ -103,8 +103,8 @@ export default function DetectionsPage() {
       }
     };
 
-    recognition.onerror = (e: any) => {
-      console.error("Speech recognition error", e);
+    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
+      console.error('Speech recognition error:', e);
     };
 
     setRecognitionInstance(recognition);
@@ -148,17 +148,13 @@ export default function DetectionsPage() {
         <header style={{marginBottom: '2rem'}}>
           <h1>Object Detections</h1>
           <p>List of all detected objects in the database</p>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h1>Object Detections</h1>
-            <button
-              aria-label="Toggle Voice Recognition"
-              onClick={() => setIsListening(!isListening)}
-              className={isListening ? 'contrast' : 'outline'}
-            >
-              {isListening ? '🎙️ Listening...' : '🎤 Start Voice'}
-            </button>
-          </div>
-
+          <button
+            onClick={() => setIsListening(!isListening)}
+            className={isListening ? 'contrast' : 'outline'}
+            style={{backgroundColor: isListening ? 'red' : '', color: isListening ? 'white' : ''}}
+          >
+            {isListening ? '🎙️ Stop Listening' : '🎙️ Start Listening'}
+          </button>
         </header>
 
         <div className="grid">
