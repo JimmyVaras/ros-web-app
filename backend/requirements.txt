@@ -3,3 +3,5 @@ sqlalchemy
 psycopg2
 roslibpy
 requests
+python-jose[cryptography]
+passlib[bcrypt]
