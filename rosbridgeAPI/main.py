@@ -91,7 +91,7 @@ def mjpeg_generator():
     while True:
         with lock:
             if latest_image is not None:
-                ret, jpeg = cv2.imencode('.jpg', latest_image)
+                ret, jpeg = cv2.imencode('.jpg', latest_image, [int(cv2.IMWRITE_JPEG_QUALITY), 50]) # Comprimido al 50%
                 frame = jpeg.tobytes()
             else:
                 frame = None

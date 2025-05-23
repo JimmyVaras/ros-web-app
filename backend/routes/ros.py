@@ -3,6 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
+from fastapi.responses import StreamingResponse
 
 import models
 from database import SessionLocal
@@ -90,3 +91,13 @@ async def navigate(detection_id: int, db: db_dependency):
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
     return {"message": "Navigation goal published", "position": db_detection.position}
+
+@router.get("/proxy-camera")
+def proxy_camera():
+    headers={
+        'X-Tunnel-Authorization': 'tunnel ' + token
+    }
+
+    r = requests.get(f"{tunnel_url}/camera/stream", headers=headers, stream=True)
+
+    return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))

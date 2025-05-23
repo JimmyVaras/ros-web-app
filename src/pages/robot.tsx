@@ -15,6 +15,13 @@ export default function RobotDetail(): ReactElement {
   const [robot, setRobot] = useState<Robot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(Date.now());
+
+  const handleReload = () => {
+    setReloadKey(Date.now());  // Cambia la clave para forzar reload
+  };
+
+  const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-camera?reload=${reloadKey}`;
 
   useEffect(() => {
     if (!id || Array.isArray(id)) return;
@@ -82,10 +89,23 @@ export default function RobotDetail(): ReactElement {
             </Link>
           </div>
         </div>
-        <div>
-          {/* TODO: Actual remote link */}
-          <img src={`${process.env.NEXT_PUBLIC_TUNNEL_BASE_URL || 'http://localhost:8001'}/camera/stream`} alt="Live feed" />
-        </div>
+        <section style={{ textAlign: "center", marginTop: "2rem" }}>
+          <div>
+            <img
+              src={imageUrl}
+              alt="Live feed"
+              style={{ maxWidth: "100%", borderRadius: "8px", border: "1px solid #ccc" }}
+            />
+          </div>
+          <button
+            onClick={handleReload}
+            role="button"
+            style={{ marginTop: "1rem" }}
+            className="secondary"
+          >
+            Restart video ⟳
+          </button>
+        </section>
       </div>
     </div>
   );
