@@ -25,7 +25,7 @@ export default function Dashboard() {
       return;
     }
     const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    fetch(`${apiUrl}/robots/my-robots`, {
+    fetch(`${apiUrl}/robots`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

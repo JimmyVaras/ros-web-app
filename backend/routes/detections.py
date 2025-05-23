@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Annotated, List
 from database import SessionLocal
-from models import Detections
+from models import Detection
 
 
 def get_db():
@@ -46,7 +46,7 @@ def is_close(p1, p2, threshold=1):
 
 @router.get("")
 async def get_all_detections(db: db_dependency):
-    detections = db.query(Detections).all()
+    detections = db.query(Detection).all()
     return detections
 
 
@@ -63,13 +63,13 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
         }
 
         # Buscar detecciones existentes con el mismo label
-        existing_detections = db.query(Detections).filter_by(label=marker.name).all()
+        existing_detections = db.query(Detection).filter_by(label=marker.name).all()
 
         # Verificar si alguna está dentro del umbral de 0.5m
         duplicate = any(is_close(d.position, new_pos) for d in existing_detections)
 
         if not duplicate:
-            detection = Detections(label=marker.name, position=new_pos)
+            detection = Detection(label=marker.name, position=new_pos, robot_id=marker.robot_id)
             db.add(detection)
             added_count += 1
 
@@ -79,7 +79,7 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
 
 @router.delete("/{detection_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_detection(detection_id: int, db: db_dependency):
-    db_detection = db.query(Detections).filter(Detections.id == detection_id).first()
+    db_detection = db.query(Detection).filter(Detection.id == detection_id).first()
 
     if not db_detection:
         raise HTTPException(

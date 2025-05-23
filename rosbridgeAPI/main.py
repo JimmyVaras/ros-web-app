@@ -102,7 +102,8 @@ def mjpeg_generator():
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
             )
         time.sleep(0.1)  # ~10 FPS
-
+        
+ # TODO: fix auth here
 @app.get("/camera/stream")
 async def stream_camera(x_tunnel_authorization: str = Header(None)):
     if False:

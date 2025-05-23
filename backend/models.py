@@ -1,15 +1,17 @@
 from sqlalchemy import Column, Integer, String, JSON, ForeignKey
-from sqlalchemy.orm import foreign, relationship
+from sqlalchemy.orm import relationship
 
 from database import Base
 
 
-class Detections(Base):
+class Detection(Base):
     __tablename__ = 'detections'
 
     id = Column(Integer, primary_key=True, index=True)
     label = Column(String, index=True)
     position = Column(JSON)
+    robot_id = Column(Integer, ForeignKey("robots.id"))
+    robot = relationship("Robot", back_populates="detections")
 
 class User(Base):
     __tablename__ = 'users'
@@ -27,3 +29,4 @@ class Robot(Base):
     model = Column(String, unique=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="robots")
+    detections = relationship("Detection", back_populates="robot")

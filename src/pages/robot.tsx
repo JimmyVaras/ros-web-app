@@ -7,8 +7,6 @@ type Robot = {
   id: number;
   name: string;
   model: string;
-  imageUrl1: string;
-  imageUrl2: string;
 };
 
 export default function RobotDetail(): ReactElement {
@@ -16,24 +14,40 @@ export default function RobotDetail(): ReactElement {
   const { id } = router.query;
   const [robot, setRobot] = useState<Robot | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id || Array.isArray(id)) return;
 
-    // Mock API call - TODO replace with actual fetch
-
     const fetchRobot = async () => {
       try {
-        const mockRobot: Robot = {
-          id: Number(id),
-          name: `Robot ${id}`,
-          model: `Model-X${id}`,
-          imageUrl1: `https://robohash.org/${id}-primary`,
-          imageUrl2: `https://robohash.org/${id}-secondary`
-        };
-        setRobot(mockRobot);
+        setIsLoading(true);
+        setError(null);
+
+        const response = await fetch(`http://localhost:8000/robots/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          setError(response.status === 401
+            ? "You don't have access to this robot"
+            : "Failed to fetch robot")
+        }
+
+        const data = await response.json();
+
+        setRobot({
+          id: data.id,
+          name: data.name,
+          model: data.model
+        });
+
       } catch (error) {
         console.error("Fetch error:", error);
+        setError(error instanceof Error ? error.message : 'An unknown error occurred');
       } finally {
         setIsLoading(false);
       }
@@ -43,13 +57,21 @@ export default function RobotDetail(): ReactElement {
   }, [id]);
 
   if (isLoading) return <div className="container">Loading...</div>;
+  if (error) return (
+    <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
+      <div>Error: {error}.</div>
+      <Link href="/" passHref legacyBehavior>
+        <a role="button" className="secondary">Back to dashboard</a>
+      </Link>
+    </div>
+  );
   if (!robot) return <div className="container">Robot not found (404)</div>;
 
   return (
-    <div className="container"  style={{ marginTop: "2rem", width: "80%"}}>
-      <h1>{robot.name}</h1>
+    <div className="container" style={{ marginTop: "2rem", width: "80%"}}>
+      <h1>{robot.name} - {robot.model}</h1>
       <div className="grid">
-        <div style={{ width: "5z0%" }}>
+        <div style={{ width: "50%" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1.5rem" }}>
             <Link href="/ros/detected_objects" passHref legacyBehavior>
               <a role="button" className="secondary">View Detected Objects</a>
@@ -61,7 +83,8 @@ export default function RobotDetail(): ReactElement {
           </div>
         </div>
         <div>
-          <img src="http://localhost:8001/camera/stream" alt="Live feed" />
+          {/* TODO: Actual remote link */}
+          <img src={`${process.env.NEXT_PUBLIC_TUNNEL_BASE_URL || 'http://localhost:8001'}/camera/stream`} alt="Live feed" />
         </div>
       </div>
     </div>
