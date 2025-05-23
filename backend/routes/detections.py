@@ -1,11 +1,13 @@
 import math
 
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from typing import Annotated, List
+
+from auth import get_current_user
 from database import SessionLocal
-from models import Detection
+from models import Detection, User, Robot
 
 
 def get_db():
@@ -44,9 +46,27 @@ def is_close(p1, p2, threshold=1):
     return math.sqrt(dx ** 2 + dy ** 2 + dz ** 2) < threshold
 
 
+# @router.get("")
+# async def get_all_detections(db: db_dependency):
+#     detections = db.query(Detection).all()
+#     return detections
+
 @router.get("")
-async def get_all_detections(db: db_dependency):
-    detections = db.query(Detection).all()
+async def get_detections_for_robot(
+        robot_id: int = Query(..., description="ID of the robot"),
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    # Verificar que el robot existe y pertenece al usuario actual
+    robot = db.query(Robot).filter(Robot.id == robot_id, Robot.owner_id == current_user.id).first()
+    if not robot:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You are not authorized to access this robot's data."
+        )
+
+    # Obtener detecciones relacionadas con el robot
+    detections = db.query(Detection).filter(Detection.robot_id == robot_id).all()
     return detections
 
 

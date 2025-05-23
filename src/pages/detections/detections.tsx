@@ -1,5 +1,7 @@
 import {useEffect, useState} from 'react';
 import '@picocss/pico/css/pico.min.css';
+import {useRouter} from "next/router";
+import Link from "next/link";
 
 
 type Position = {
@@ -15,6 +17,8 @@ type Detection = {
 }
 
 export default function DetectionsPage() {
+  const router = useRouter();
+  const { robot_id } = router.query;
   const [detections, setDetections] = useState<Detection[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +29,17 @@ export default function DetectionsPage() {
   const fetchDetections = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-      const response = await fetch(`${apiUrl}/detections`);
+      const response = await fetch(`${apiUrl}/detections?robot_id=${robot_id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(`API request failed with status ${response.status}`);
+        setError(response.status === 401
+          ? "You don't have access to this robot"
+          : "Failed to fetch robot")
       }
 
       const data = await response.json();
@@ -137,11 +148,11 @@ export default function DetectionsPage() {
   );
 
   if (error) return (
-    <div className="container">
-      <article className="alert alert-error" style={{marginTop: '2rem'}}>
-        <header>Error</header>
-        {error}
-      </article>
+    <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
+      <div>Error: {error}.</div>
+      <Link href="/" passHref legacyBehavior>
+        <a role="button" className="secondary">Back to dashboard</a>
+      </Link>
     </div>
   );
 

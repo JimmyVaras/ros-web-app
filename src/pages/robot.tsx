@@ -80,12 +80,14 @@ export default function RobotDetail(): ReactElement {
       <div className="grid">
         <div style={{ width: "50%" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1.5rem" }}>
+            <button onClick={() =>
+                router.push({
+                  pathname: '/detections/detections',
+                  query: { robot_id: robot.id.toString() }
+                })
+              } > Objects Stored </button>
             <Link href="/ros/detected_objects" passHref legacyBehavior>
-              <a role="button" className="secondary">View Detected Objects</a>
-            </Link>
-
-            <Link href="/detections/detections" passHref legacyBehavior>
-              <a role="button" className="secondary">View Stored Objects</a>
+              <a role="button" className="secondary">Live detections</a>
             </Link>
           </div>
         </div>
