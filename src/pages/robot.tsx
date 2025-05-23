@@ -2,6 +2,7 @@ import '@picocss/pico/css/pico.min.css';
 import { useRouter } from 'next/router';
 import { ReactElement, useState, useEffect } from 'react';
 import Link from "next/link";
+import MapViewer from "@/components/MapViewer";
 
 type Robot = {
   id: number;
@@ -16,6 +17,7 @@ export default function RobotDetail(): ReactElement {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(Date.now());
+
 
   const handleReload = () => {
     setReloadKey(Date.now());  // Cambia la clave para forzar reload
@@ -78,8 +80,7 @@ export default function RobotDetail(): ReactElement {
     <div className="container" style={{ marginTop: "2rem", width: "80%"}}>
       <h1>{robot.name} - {robot.model}</h1>
       <div className="grid">
-        <div style={{ width: "50%" }}>
-          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1.5rem" }}>
+          <div style={{ width: "50%", display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1.5rem" }}>
             <button onClick={() =>
                 router.push({
                   pathname: '/detections/detections',
@@ -90,24 +91,47 @@ export default function RobotDetail(): ReactElement {
               <a role="button" className="secondary">Live detections</a>
             </Link>
           </div>
-        </div>
-        <section style={{ textAlign: "center", marginTop: "2rem" }}>
-          <div>
-            <img
-              src={imageUrl}
-              alt="Live feed"
-              style={{ maxWidth: "100%", borderRadius: "8px", border: "1px solid #ccc" }}
-            />
-          </div>
-          <button
-            onClick={handleReload}
-            role="button"
-            style={{ marginTop: "1rem" }}
-            className="secondary"
-          >
-            Restart video ⟳
-          </button>
-        </section>
+          <section style={{
+             display: 'flex',
+             justifyContent: 'center',
+             gap: '2rem',
+             width: '150%',
+             marginLeft: '-40%',
+             marginTop: '1rem',
+             flexWrap: 'wrap' // Allows items to wrap on smaller screens
+           }}>
+             <div style={{
+               textAlign: 'center',
+               flex: 1,
+               minWidth: '300px' // Minimum width before wrapping
+             }}>
+               <img
+                 src={imageUrl}
+                 alt="Live feed"
+                 style={{
+                   maxWidth: '100%',
+                   borderRadius: '8px',
+                   border: '1px solid #ccc'
+                 }}
+               />
+               <button
+                 onClick={handleReload}
+                 role="button"
+                 style={{ marginTop: '1rem' }}
+                 className="secondary"
+               >
+                 Restart video ⟳
+               </button>
+             </div>
+
+             <div style={{
+               textAlign: 'center',
+               flex: 1,
+               minWidth: '300px' // Minimum width before wrapping
+             }}>
+               <MapViewer />
+             </div>
+           </section>
       </div>
     </div>
   );

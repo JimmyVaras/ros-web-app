@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import roslibpy
 import os
+from PIL import Image, ImageDraw
+from io import BytesIO
 
 from fastapi.responses import StreamingResponse
 import threading
@@ -113,3 +115,61 @@ async def stream_camera(x_tunnel_authorization: str = Header(None)):
         )
 
     return StreamingResponse(mjpeg_generator(), media_type='multipart/x-mixed-replace; boundary=frame')
+
+latest_map = None
+latest_pose = None
+
+def subscribe_topics():
+    def map_callback(msg):
+        global latest_map
+        latest_map = msg
+
+    def pose_callback(msg):
+        global latest_pose
+        latest_pose = msg
+
+    roslibpy.Topic(ros, '/map', 'nav_msgs/OccupancyGrid').subscribe(map_callback)
+    roslibpy.Topic(ros, '/amcl_pose', 'geometry_msgs/PoseWithCovarianceStamped').subscribe(pose_callback)
+
+threading.Thread(target=subscribe_topics, daemon=True).start()
+
+@app.get("/map/snapshot")
+async def map_snapshot(x_tunnel_authorization: str = Header(None)):
+    if not latest_map or not latest_pose:
+        raise HTTPException(status_code=503, detail="Map or pose not available")
+
+    width = latest_map['info']['width']
+    height = latest_map['info']['height']
+    resolution = latest_map['info']['resolution']
+    origin = latest_map['info']['origin']['position']
+    data = latest_map['data']
+
+    # Create an RGB image
+    img = Image.new('RGB', (width, height), color='white')
+
+    # Convert the map data to RGB format
+    rgb_data = []
+    for val in data:
+        if val == -1:  # Unknown - typically shown as gray
+            rgb = (128, 128, 128)
+        else:
+            # Convert occupancy value (0-100) to grayscale then to RGB
+            intensity = 255 - int(val * 2.55)  # Convert 0-100 to 255-0
+            rgb = (intensity, intensity, intensity)
+        rgb_data.append(rgb)
+
+    img.putdata(rgb_data)
+    img = img.transpose(Image.FLIP_TOP_BOTTOM)
+
+    x = latest_pose['pose']['pose']['position']['x']
+    y = latest_pose['pose']['pose']['position']['y']
+    px = int((x - origin['x']) / resolution)
+    py = height - int((y - origin['y']) / resolution)
+
+    draw = ImageDraw.Draw(img)
+    draw.ellipse((px - 5, py - 5, px + 5, py + 5), fill="red")
+
+    buffer = BytesIO()
+    img.save(buffer, format='JPEG')
+    buffer.seek(0)
+    return StreamingResponse(buffer, media_type="image/jpeg")

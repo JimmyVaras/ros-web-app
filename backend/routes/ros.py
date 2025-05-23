@@ -92,6 +92,7 @@ async def navigate(detection_id: int, db: db_dependency):
 
     return {"message": "Navigation goal published", "position": db_detection.position}
 
+# Authentication required for theses 2 proxies
 @router.get("/proxy-camera")
 def proxy_camera():
     headers={
@@ -99,5 +100,15 @@ def proxy_camera():
     }
 
     r = requests.get(f"{tunnel_url}/camera/stream", headers=headers, stream=True)
+
+    return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
+
+@router.get("/proxy-map")
+def proxy_map():
+    headers={
+        'X-Tunnel-Authorization': 'tunnel ' + token
+    }
+
+    r = requests.get(f"{tunnel_url}/map/snapshot", headers=headers, stream=True)
 
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
