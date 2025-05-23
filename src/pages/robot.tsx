@@ -30,8 +30,8 @@ export default function RobotDetail(): ReactElement {
       try {
         setIsLoading(true);
         setError(null);
-
-        const response = await fetch(`http://localhost:8000/robots/${id}`, {
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        const response = await fetch(`${apiUrl}/robots/${id}`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('token')}`,
             'Content-Type': 'application/json',

@@ -26,8 +26,8 @@ export default function Home() {
     const form = new URLSearchParams({ username, password });
 
     try {
-
-      const res = await fetch("http://localhost:8000/login", {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const res = await fetch(`${apiUrl}/login`, {
         method: "POST",
         body: form,
         headers: {
