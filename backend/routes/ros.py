@@ -76,7 +76,7 @@ def publish_goal(position_dict):
 # POST endpoint to navigate to the detection
 @router.post("/{detection_id}/navigate")
 async def navigate(detection_id: int, db: db_dependency):
-    db_detection = db.query(models.Detections).filter(models.Detections.id == detection_id).first()
+    db_detection = db.query(models.Detection).filter(models.Detection.id == detection_id).first()
 
     if not db_detection:
         raise HTTPException(
