@@ -1,5 +1,5 @@
 import time
-from typing import Annotated
+from typing import Annotated, Dict
 
 from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
@@ -25,7 +25,6 @@ def get_db():
         yield db
     finally:
         db.close()
-
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
@@ -77,7 +76,7 @@ def publish_goal(position_dict):
 
 # POST endpoint to navigate to the detection
 @router.post("/{detection_id}/navigate")
-async def navigate(detection_id: int, db: db_dependency, current_user: models.User = Depends(get_current_user)):
+async def navigate_detection(detection_id: int, db: db_dependency, current_user: models.User = Depends(get_current_user)):
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -98,6 +97,21 @@ async def navigate(detection_id: int, db: db_dependency, current_user: models.Us
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
     return {"message": "Navigation goal published", "position": db_detection.position}
+
+@router.post("/navigate")
+def navigate_coords(position: Dict[str, float], current_user: models.User = Depends(get_current_user)):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have permission to do that"
+        )
+
+    try:
+        publish_goal(position)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
+
+    return {"message": "Navigation goal published", "position": position}
 
 # TODO: Date-time watermarks in images
 @router.get("/proxy-camera")

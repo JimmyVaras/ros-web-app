@@ -1,45 +1,88 @@
-import { useState, useEffect } from 'react';
-import Image from "next/image";
+'use client';
 
+import { useState, useEffect, useRef } from 'react';
+import {toast, ToastContainer} from 'react-toastify';
 function MapViewer() {
-    const [reload, setReload] = useState(0);
-    const [autoRefresh, setAutoRefresh] = useState(false);
+  const [reload, setReload] = useState(0);
+  const [autoRefresh, setAutoRefresh] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
 
-    // Auto-refresh effect
-    useEffect(() => {
-      let interval: string | number | NodeJS.Timeout | undefined;
-      if (autoRefresh) {
-        interval = setInterval(() => {
-          setReload(prev => prev + 1);
-        }, 1000); // Update every second
-      }
-      return () => clearInterval(interval);
-    }, [autoRefresh]);
+  // CONFIG — ajustar al mapa
+  const mapWidth = 600;
+  const mapHeight = 400;
+  const mapResolution = 0.05; // metros/pixel
+  const originX = -13.0;
+  const originY = -7.5;
 
-    const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-map?auth=${localStorage.getItem('token')}&reload=${reload}`;
+  const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-map?auth=${localStorage.getItem('token')}&reload=${reload}`;
 
-    return (
-      <section style={{ textAlign: 'center' }}>
-        <Image
-          src={imageUrl}
-          alt="Map with robot"
-          width={600}
-          height={400}
-          unoptimized
-          style={{ maxWidth: "100%", borderRadius: "8px", border: "1px solid #ccc" }}
-        />
-        <div style={{ marginBottom: '8px' }}>
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '0.5rem' }}>
-            Auto-update:
-            <input
-              type="checkbox"
-              checked={autoRefresh}
-              onChange={() => setAutoRefresh(!autoRefresh)}
-            />
-          </label>
-        </div>
-      </section>
-    );
-  }
+  useEffect(() => {
+    let interval: NodeJS.Timeout | undefined;
+    if (autoRefresh) {
+      interval = setInterval(() => {
+        setReload(prev => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [autoRefresh]);
 
-  export default MapViewer;
+  const handleClick = async (e: React.MouseEvent<HTMLImageElement>) => {
+    const rect = imgRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    const x_px = e.clientX - rect.left;
+    const y_px = e.clientY - rect.top;
+
+    const x = originX + x_px * mapResolution;
+    const y = originY + (mapHeight - y_px) * mapResolution;
+
+    console.log("Sending goal to:", x, y);
+
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/navigate`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ x, y })
+    });
+
+    if (!res.ok) {
+      toast('Failed to send goal!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+    } else {
+      toast('Goal sent!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+    }
+  };
+
+  return (
+    <section style={{ textAlign: 'center' }}>
+      <img
+        ref={imgRef}
+        src={imageUrl}
+        alt="Map with robot"
+        width={mapWidth}
+        height={mapHeight}
+        onClick={handleClick}
+        style={{
+          maxWidth: "100%",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          cursor: "crosshair"
+        }}
+      />
+      <div style={{ marginBottom: '8px' }}>
+        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '0.5rem' }}>
+          Auto-update:
+          <input
+            type="checkbox"
+            checked={autoRefresh}
+            onChange={() => setAutoRefresh(!autoRefresh)}
+          />
+        </label>
+      </div>
+      <ToastContainer />
+    </section>
+  );
+}
+
+export default MapViewer;
