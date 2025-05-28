@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Image from "next/image";
 
 function MapViewer() {
-  const [reload, setReload] = useState(0);
+    const [reload, setReload] = useState(0);
     const [autoRefresh, setAutoRefresh] = useState(false);
 
     // Auto-refresh effect
@@ -16,7 +16,7 @@ function MapViewer() {
       return () => clearInterval(interval);
     }, [autoRefresh]);
 
-    const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-map?reload=${reload}`;
+    const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-map?auth=${localStorage.getItem('token')}&reload=${reload}`;
 
     return (
       <section style={{ textAlign: 'center' }}>

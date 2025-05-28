@@ -13,7 +13,9 @@ import numpy as np
 import base64
 import time
 
-EXPECTED_TUNNEL_TOKEN = os.getenv("TUNNEL_AUTH_TOKEN")
+# Añadir .env, solo para usar en tunel sin auth
+#EXPECTED_TUNNEL_TOKEN = os.getenv("TUNNEL_AUTH_TOKEN")
+#EXPECTED_FULL_TOKEN = f"tunnel {EXPECTED_TUNNEL_TOKEN}"
 
 app = FastAPI()
 
@@ -47,13 +49,7 @@ class PublishRequest(BaseModel):
 
 
 @app.post("/publish")
-async def publish_message(data: PublishRequest, x_tunnel_authorization: str = Header(None)):
-    if x_tunnel_authorization != EXPECTED_TUNNEL_TOKEN:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing tunnel authorization token"
-        )
-
+async def publish_message(data: PublishRequest):
     if not ros.is_connected:
         return {"success": False, "error": "ROS is not connected"}
 
@@ -107,13 +103,7 @@ def mjpeg_generator():
         
  # TODO: fix auth here
 @app.get("/camera/stream")
-async def stream_camera(x_tunnel_authorization: str = Header(None)):
-    if False:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or missing tunnel authorization token"
-        )
-
+async def stream_camera():
     return StreamingResponse(mjpeg_generator(), media_type='multipart/x-mixed-replace; boundary=frame')
 
 latest_map = None
@@ -134,7 +124,7 @@ def subscribe_topics():
 threading.Thread(target=subscribe_topics, daemon=True).start()
 
 @app.get("/map/snapshot")
-async def map_snapshot(x_tunnel_authorization: str = Header(None)):
+async def map_snapshot():
     if not latest_map or not latest_pose:
         raise HTTPException(status_code=503, detail="Map or pose not available")
 

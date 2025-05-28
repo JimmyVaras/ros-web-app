@@ -17,13 +17,23 @@ export default function RobotDetail(): ReactElement {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(Date.now());
+  const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400.png");
 
 
   const handleReload = () => {
     setReloadKey(Date.now());  // Cambia la clave para forzar reload
   };
 
-  const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-camera?reload=${reloadKey}`;
+  // TODO: Meter jwt token por uri param, ya q no hay body
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+      if (!token) return;
+
+      const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const url = `${baseUrl}/ros/proxy-camera?auth=${token}&reload=${reloadKey}`;
+      setImageUrl(url);
+    }, [reloadKey]);
+
 
   useEffect(() => {
     if (!id || Array.isArray(id)) return;

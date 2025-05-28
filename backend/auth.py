@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
-from jose import jwt, JWTError
-from fastapi import Depends, HTTPException, status
+
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 
@@ -66,4 +67,35 @@ def get_current_user(
     user = db.query(User).filter(User.username == username).first()
     if user is None:
         raise credentials_exception
+    return user
+
+def get_current_user_from_request(
+        request: Request,
+        db: Session = Depends(get_db)
+) -> User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid credentials",
+    )
+
+
+    token = request.query_params.get("auth")
+    if token is None:
+        raise credentials_exception
+
+    try:
+        payload = verify_token(f"{token}")
+        print(str(payload))
+        username = payload.get("sub")
+        if username is None:
+            print("no username")
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(User).filter(User.username == username).first()
+    if user is None:
+        print("user not found")
+        raise credentials_exception
+
     return user

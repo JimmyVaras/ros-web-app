@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from fastapi.responses import StreamingResponse
 
 import models
+from auth import get_current_user, get_current_user_from_request
 from database import SessionLocal
 import requests
 import os
@@ -76,7 +77,13 @@ def publish_goal(position_dict):
 
 # POST endpoint to navigate to the detection
 @router.post("/{detection_id}/navigate")
-async def navigate(detection_id: int, db: db_dependency):
+async def navigate(detection_id: int, db: db_dependency, current_user: models.User = Depends(get_current_user)):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have permission to do that"
+        )
+
     db_detection = db.query(models.Detection).filter(models.Detection.id == detection_id).first()
 
     if not db_detection:
@@ -92,9 +99,15 @@ async def navigate(detection_id: int, db: db_dependency):
 
     return {"message": "Navigation goal published", "position": db_detection.position}
 
-# Authentication required for theses 2 proxies
+# TODO: Date-time watermarks in images
 @router.get("/proxy-camera")
-def proxy_camera():
+def proxy_camera(current_user: models.User = Depends(get_current_user_from_request)):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have permission to do that"
+        )
+
     headers={
         'X-Tunnel-Authorization': 'tunnel ' + token
     }
@@ -104,7 +117,13 @@ def proxy_camera():
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
 
 @router.get("/proxy-map")
-def proxy_map():
+def proxy_map(current_user: models.User = Depends(get_current_user_from_request)):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have permission to do that"
+        )
+
     headers={
         'X-Tunnel-Authorization': 'tunnel ' + token
     }
