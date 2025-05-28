@@ -73,7 +73,9 @@ export default function DetectionsPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/ros/${id}/navigate`, {
-        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }, method: 'POST',
       });
       if (!response.ok) {
         throw new Error('Failed to navigate to detection');

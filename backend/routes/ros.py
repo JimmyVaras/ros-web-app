@@ -5,7 +5,7 @@ from fastapi import Depends, APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 from fastapi.responses import StreamingResponse
 
-import models
+from models import User, Detection
 from auth import get_current_user, get_current_user_from_request
 from database import SessionLocal
 import requests
@@ -76,14 +76,14 @@ def publish_goal(position_dict):
 
 # POST endpoint to navigate to the detection
 @router.post("/{detection_id}/navigate")
-async def navigate_detection(detection_id: int, db: db_dependency, current_user: models.User = Depends(get_current_user)):
+async def navigate_detection(detection_id: int, db: db_dependency, current_user: User = Depends(get_current_user)):
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="You don't have permission to do that"
         )
 
-    db_detection = db.query(models.Detection).filter(models.Detection.id == detection_id).first()
+    db_detection = db.query(Detection).filter(Detection.id == detection_id).first()
 
     if not db_detection:
         raise HTTPException(
@@ -99,7 +99,7 @@ async def navigate_detection(detection_id: int, db: db_dependency, current_user:
     return {"message": "Navigation goal published", "position": db_detection.position}
 
 @router.post("/navigate")
-def navigate_coords(position: Dict[str, float], current_user: models.User = Depends(get_current_user)):
+def navigate_coords(position: Dict[str, float], current_user: User = Depends(get_current_user)):
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -115,7 +115,7 @@ def navigate_coords(position: Dict[str, float], current_user: models.User = Depe
 
 # TODO: Date-time watermarks in images
 @router.get("/proxy-camera")
-def proxy_camera(current_user: models.User = Depends(get_current_user_from_request)):
+def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -131,7 +131,7 @@ def proxy_camera(current_user: models.User = Depends(get_current_user_from_reque
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
 
 @router.get("/proxy-map")
-def proxy_map(current_user: models.User = Depends(get_current_user_from_request)):
+def proxy_map(current_user: User = Depends(get_current_user_from_request)):
     if current_user is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
