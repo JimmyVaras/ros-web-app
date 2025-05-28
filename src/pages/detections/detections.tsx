@@ -55,6 +55,9 @@ export default function DetectionsPage() {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/detections/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
         method: 'DELETE',
       });
       if (!response.ok) {
