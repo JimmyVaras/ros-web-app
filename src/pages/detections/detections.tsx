@@ -24,11 +24,11 @@ export default function DetectionsPage() {
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognition | null>(null);
+  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 
   const fetchDetections = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/detections?robot_id=${robot_id}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -61,7 +61,7 @@ export default function DetectionsPage() {
         method: 'DELETE',
       });
       if (!response.ok) {
-        throw new Error('Failed to delete detection');
+        setError('Failed to delete detection');
       }
       await fetchDetections();
     } catch (err) {
@@ -71,14 +71,13 @@ export default function DetectionsPage() {
 
   const handleNavigate = async (id: number) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/ros/${id}/navigate`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }, method: 'POST',
       });
       if (!response.ok) {
-        throw new Error('Failed to navigate to detection');
+        setError('Failed to navigate to detection');
       }
       await fetchDetections();
     } catch (err) {

@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { ReactElement, useState, useEffect } from 'react';
 import Link from "next/link";
 import MapViewer from "@/components/MapViewer";
+import VoiceCommands from "@/components/VoiceCommands";
 
 type Robot = {
   id: number;
@@ -100,6 +101,7 @@ export default function RobotDetail(): ReactElement {
             <Link href="/ros/detected_objects" passHref legacyBehavior>
               <a role="button" className="secondary">Live detections</a>
             </Link>
+          <VoiceCommands robot_id={robot.id}/>
           </div>
           <section style={{
              display: 'flex',
