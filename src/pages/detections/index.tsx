@@ -48,8 +48,6 @@ export default function DetectionsIndex(): ReactElement {
             : "Failed to fetch robot")
         }
 
-        const data = await response.json();
-
       } catch (error) {
         console.error("Fetch error:", error);
         setError(error instanceof Error ? error.message : 'An unknown error occurred');
@@ -85,7 +83,7 @@ export default function DetectionsIndex(): ReactElement {
             <Link href="/" passHref legacyBehavior>
               <a role="button" className="secondary">Link</a>
             </Link>
-            <TempDetectionsList robot_id={robot_id} />
+            <TempDetectionsList robot_id={robot_id?.toString() || ''} />
           </div>
           <section style={{
              display: 'flex',
