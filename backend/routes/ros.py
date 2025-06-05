@@ -91,11 +91,11 @@ async def navigate_detection(detection_id: int, db: db_dependency, current_user:
         )
 
     try:
-        result =publish_goal(db_detection.position)
+        result = publish_goal(db_detection.position)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
-    return {"message": "Navigation goal published", "position": db_detection.position, status: result}
+    return {"message": "Navigation goal published", "position": str(db_detection.position), "status": str(result)}
 
 @router.post("/navigate")
 def navigate_coords(position: Dict[str, float], current_user: User = Depends(get_current_user)):
