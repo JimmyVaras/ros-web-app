@@ -47,6 +47,11 @@ class PublishRequest(BaseModel):
     type: str
     message: dict
 
+# To activate/deactivate que encoding of the Stream and reduce load
+stream_detections_enabled = True
+stream_camera_enabled = True
+
+
 
 @app.post("/publish")
 async def publish_message(data: PublishRequest):
@@ -87,6 +92,10 @@ threading.Thread(target=subscribe_to_camera, daemon=True).start()
 # Generador MJPEG
 def mjpeg_generator():
     while True:
+        if not stream_camera_enabled:
+            time.sleep(0.5)
+            continue
+
         with lock:
             if latest_image is not None:
                 ret, jpeg = cv2.imencode('.jpg', latest_image, [int(cv2.IMWRITE_JPEG_QUALITY), 50]) # Comprimido al 50%
@@ -163,3 +172,73 @@ async def map_snapshot():
     img.save(buffer, format='JPEG')
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="image/jpeg")
+
+latest_detections_image = None
+
+def subscribe_to_detections_image():
+    def callback(message):
+        global latest_detections_image
+        try:
+            img_data = base64.b64decode(message['data'])
+            np_arr = np.frombuffer(img_data, np.uint8)
+            frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+
+            with lock:
+                latest_detections_image = frame
+        except Exception as e:
+            print(f"Error decoding detections image: {e}")
+
+    image_topic = roslibpy.Topic(ros, '/yolo_detections/image/compressed', 'sensor_msgs/CompressedImage')
+    image_topic.subscribe(callback)
+
+threading.Thread(target=subscribe_to_detections_image, daemon=True).start()
+
+@app.get("/detections/stream")
+async def stream_detections():
+    def generator():
+        while True:
+            if not stream_detections_enabled:
+                time.sleep(0.5)
+                continue # skips the stream encoding
+
+            with lock:
+                if latest_detections_image is not None:
+                    ret, jpeg = cv2.imencode('.jpg', latest_detections_image, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
+                    frame = jpeg.tobytes()
+                else:
+                    frame = None
+
+            if frame:
+                yield (
+                    b'--frame\r\n'
+                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+                )
+            time.sleep(0.1)
+
+    return StreamingResponse(generator(), media_type='multipart/x-mixed-replace; boundary=frame')
+
+# TODO implementar llamadas en frontend
+@app.post("/detections/stream/enable")
+async def enable_detections_stream():
+    global stream_detections_enabled
+    stream_detections_enabled = True
+    return {"status": "enabled"}
+
+@app.post("/detections/stream/disable")
+async def disable_detections_stream():
+    global stream_detections_enabled
+    stream_detections_enabled = False
+    return {"status": "disabled"}
+
+@app.post("/camera/stream/enable")
+async def enable_detections_stream():
+    global stream_camera_enabled
+    stream_camera_enabled = True
+    return {"status": "enabled"}
+
+@app.post("/camera/stream/disable")
+async def disable_detections_stream():
+    global stream_camera_enabled
+    stream_camera_enabled = False
+    return {"status": "disabled"}
+

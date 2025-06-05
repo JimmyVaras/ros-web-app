@@ -2,9 +2,11 @@
 
 import { useState, useEffect, useRef } from 'react';
 import {toast, ToastContainer} from 'react-toastify';
+
 function MapViewer() {
   const [reload, setReload] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
+  const [mapUrl, setMapUrl] = useState<string>("https://placehold.co/600x400?text=Loading+map...");
   const imgRef = useRef<HTMLImageElement>(null);
 
   // CONFIG — ajustar al mapa
@@ -14,7 +16,14 @@ function MapViewer() {
   const originX = -13.0;
   const originY = -7.5;
 
-  const imageUrl = `${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/proxy-map?auth=${localStorage.getItem('token')}&reload=${reload}`;
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+    const mapUrl = `${baseUrl}/ros/proxy-map?auth=${localStorage.getItem('token')}&reload=${reload}`;
+    setMapUrl(mapUrl);
+    }, [reload]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout | undefined;
@@ -58,7 +67,7 @@ function MapViewer() {
     <section style={{ textAlign: 'center' }}>
       <img
         ref={imgRef}
-        src={imageUrl}
+        src={mapUrl}
         alt="Map with robot"
         width={mapWidth}
         height={mapHeight}

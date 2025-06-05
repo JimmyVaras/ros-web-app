@@ -52,9 +52,6 @@ def publish_goal(position_dict):
         }
     }
 
-    print(token)
-    print(tunnel_url)
-
     try:
         response = requests.post(
             tunnel_url + "/publish",
@@ -70,8 +67,10 @@ def publish_goal(position_dict):
         )
         response.raise_for_status()
         print("Goal successfully published via API.")
+        return True
     except requests.RequestException as e:
         print(f"Failed to publish goal: {e}")
+        return False
 
 
 # POST endpoint to navigate to the detection
@@ -92,11 +91,11 @@ async def navigate_detection(detection_id: int, db: db_dependency, current_user:
         )
 
     try:
-        publish_goal(db_detection.position)
+        result =publish_goal(db_detection.position)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
-    return {"message": "Navigation goal published", "position": db_detection.position}
+    return {"message": "Navigation goal published", "position": db_detection.position, status: result}
 
 @router.post("/navigate")
 def navigate_coords(position: Dict[str, float], current_user: User = Depends(get_current_user)):
@@ -107,11 +106,11 @@ def navigate_coords(position: Dict[str, float], current_user: User = Depends(get
         )
 
     try:
-        publish_goal(position)
+        result = publish_goal(position)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
-    return {"message": "Navigation goal published", "position": position}
+    return {"message": "Navigation goal published", "position": position, "status": result}
 
 # TODO: Date-time watermarks in images
 @router.get("/proxy-camera")
@@ -143,5 +142,21 @@ def proxy_map(current_user: User = Depends(get_current_user_from_request)):
     }
 
     r = requests.get(f"{tunnel_url}/map/snapshot", headers=headers, stream=True)
+
+    return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
+
+@router.get("/proxy-detections")
+def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
+    if current_user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="You don't have permission to do that"
+        )
+
+    headers={
+        'X-Tunnel-Authorization': 'tunnel ' + token
+    }
+
+    r = requests.get(f"{tunnel_url}/detections/stream", headers=headers, stream=True)
 
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))

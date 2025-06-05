@@ -13,6 +13,16 @@ class Detection(Base):
     robot_id = Column(Integer, ForeignKey("robots.id"))
     robot = relationship("Robot", back_populates="detections")
 
+class TempDetection(Base):
+    __tablename__ = 'temp_detections'
+
+    id = Column(Integer, primary_key=True, index=True)
+    label = Column(String, index=True)
+    position = Column(JSON)
+    robot_id = Column(Integer, ForeignKey("robots.id"))
+    robot = relationship("Robot", back_populates="temp_detections")
+    confidence = Column(Integer)
+
 class User(Base):
     __tablename__ = 'users'
 
@@ -30,3 +40,5 @@ class Robot(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="robots")
     detections = relationship("Detection", back_populates="robot")
+    temp_detections = relationship("TempDetection", back_populates="robot")
+
