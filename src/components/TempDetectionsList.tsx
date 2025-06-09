@@ -19,9 +19,11 @@ type TempDetection = {
 
 interface TempDetectionsListProps {
   robot_id: string;
+  onHighlight: (pos: Position) => void;
 }
 
-export default function TempDetectionsList({ robot_id }: TempDetectionsListProps) {
+
+export default function TempDetectionsList({ robot_id, onHighlight }: TempDetectionsListProps) {
   const [tempDetections, setTempDetections] = useState<TempDetection[]>([])
   const [error, setError] = useState<string | null>(null);
 
@@ -49,30 +51,30 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
   };
 
   const handleSave = async (id: number) => {
-  try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
-    const response = await fetch(`${apiUrl}/detections/save/${id}`, {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      method: 'POST',
-    });
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/detections/save/${id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        method: 'POST',
+      });
 
-    if (response.status === 409) {
-      // Conflict due to duplicate → remove from list
-      setTempDetections(prev => prev.filter(det => det.id !== id));
-      toast('Failed to save! A duplicate was found', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
-    } else if (!response.ok) {
-      toast('Failed to save!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
-    } else {
-      // On success, also remove the saved detection
-      setTempDetections(prev => prev.filter(det => det.id !== id));
-      toast('Detection saved!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      if (response.status === 409) {
+        // Conflict due to duplicate → remove from list
+        setTempDetections(prev => prev.filter(det => det.id !== id));
+        toast('Failed to save! A duplicate was found', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      } else if (!response.ok) {
+        toast('Failed to save!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      } else {
+        // On success, also remove the saved detection
+        setTempDetections(prev => prev.filter(det => det.id !== id));
+        toast('Detection saved!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save temporary detection');
     }
-  } catch (err) {
-    setError(err instanceof Error ? err.message : 'Failed to save temporary detection');
-  }
-};
+  };
 
 
   const handleDelete = async (id: number) => {
@@ -108,6 +110,28 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
     }
   };
 
+  const handleClear = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/detections/temp/remove/all`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        toast('Failed to clear!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      } else {
+        // On success, also clear the list
+        setTempDetections(prev => []);
+        toast('Detections cleared!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to clear temporary detections');
+    }
+  };
+
   useEffect(() => {
     fetchTempDetections();
   }, []);
@@ -116,7 +140,7 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
-      <Link href="/" passHref legacyBehavior>
+      <Link href="/dashboard" passHref legacyBehavior>
         <a role="button" className="secondary">Back to dashboard</a>
       </Link>
     </div>
@@ -128,6 +152,12 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
         <p>No temporary detections found.</p>
       ) : (
         <div className="grid" style={{ gridTemplateColumns: '1fr', gap: '0rem' }}>
+          <button
+            style={{ marginRight: '0.5rem' }}
+            onClick={() => handleClear()}
+          >
+            Clear all 🗑️
+          </button>
           {tempDetections.map((detection) => (
             <article key={detection.id} style={{ padding: '1rem' }}>
               <header>
@@ -143,6 +173,14 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
                 >
                   Save 💾
                 </button>
+                <button
+                  onClick={() => onHighlight(detection.position)}
+                  className="contrast"
+                  style={{ marginRight: '0.5rem' }}
+                >
+                  Show on map 📍
+                </button>
+
                 <button
                   aria-atomic={"true"}
                   onClick={() => handleDelete(detection.id)}

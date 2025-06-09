@@ -12,6 +12,8 @@ export default function DetectionsIndex(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(Date.now());
   const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400?text=Loading+camera...");
+  const [highlightedPoints, setHighlightedPoints] = useState<Position[]>([]);
+
 
 
   const handleReload = () => {
@@ -59,15 +61,28 @@ export default function DetectionsIndex(): ReactElement {
     fetchRobot();
   }, [robot_id]);
 
+  const handleHighlight = (position: { x: number; y: number }) => {
+  setHighlightPoint(position);
+
+  // Clear the highlight after 5 seconds
+  setTimeout(() => {
+    setHighlightPoint(null);
+  }, 5000);
+};
+
   if (isLoading) return <div className="container">Loading...</div>;
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
-      <Link href="/" passHref legacyBehavior>
+      <Link href="/dashboard" passHref legacyBehavior>
         <a role="button" className="secondary">Back to dashboard</a>
       </Link>
     </div>
   );
+
+  if (!router.isReady) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container" style={{ marginTop: "2rem", width: "80%"}}>
@@ -80,10 +95,15 @@ export default function DetectionsIndex(): ReactElement {
                   query: { robot_id: robot_id }
                 })
               } > Objects Stored </button>
-            <Link href="/" passHref legacyBehavior>
-              <a role="button" className="secondary">Link</a>
-            </Link>
-            <TempDetectionsList robot_id={robot_id?.toString() || ''} />
+            {/*<Link href="/" passHref legacyBehavior>*/}
+            {/*  <a role="button" className="secondary">Link</a>*/}
+            {/*</Link>*/}
+            <TempDetectionsList
+              robot_id={robot_id}
+              onHighlight={(position: Position) =>
+                setHighlightedPoints((prev) => [...prev, position])
+              }
+            />
           </div>
           <section style={{
              display: 'flex',
@@ -123,7 +143,7 @@ export default function DetectionsIndex(): ReactElement {
                flex: 1,
                minWidth: '300px' // Minimum width before wrapping
              }}>
-               <MapViewer />
+               <MapViewer highlightedPoints={highlightedPoints} />
              </div>
            </section>
       </div>

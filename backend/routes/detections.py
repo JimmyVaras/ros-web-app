@@ -39,7 +39,7 @@ class MarkerList(BaseModel):
     markers: List[MarkerData]
 
 
-def is_close(p1, p2, threshold=0.5):
+def is_close(p1, p2, threshold=1):
     """Calcula la distancia euclidiana entre dos puntos 3D."""
     dx = p1["x"] - p2["x"]
     dy = p1["y"] - p2["y"]
@@ -197,6 +197,7 @@ async def delete_detection(detection_id: int, db: db_dependency):
     try:
         db.delete(db_detection)
         db.commit()
+        return {"status": "200"}
     except Exception as e:
         db.rollback()
         raise HTTPException(
@@ -205,7 +206,7 @@ async def delete_detection(detection_id: int, db: db_dependency):
         )
 
 @router.delete("/temp/{temp_detection_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_detection(temp_detection_id: int, db: db_dependency):
+async def delete_temp_detection(temp_detection_id: int, db: db_dependency):
     db_temp_detection = db.query(TempDetection).filter(TempDetection.id == temp_detection_id).first()
 
     if not db_temp_detection:
@@ -222,4 +223,18 @@ async def delete_detection(temp_detection_id: int, db: db_dependency):
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting temporary detection: {str(e)}"
+        )
+
+@router.delete("/temp/remove/all", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_temp_detections(db: db_dependency):
+    try:
+        # Delete all records from TempDetection table
+        db.query(TempDetection).delete()
+        db.commit()
+        return {"status": "200"}
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error deleting all temporary detections: {str(e)}"
         )

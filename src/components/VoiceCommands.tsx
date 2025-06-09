@@ -136,7 +136,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
-      <Link href="/" passHref legacyBehavior>
+      <Link href="/dashboard" passHref legacyBehavior>
         <a role="button" className="secondary">Back to dashboard</a>
       </Link>
     </div>
