@@ -12,8 +12,6 @@ export default function DetectionsIndex(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(Date.now());
   const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400?text=Loading+camera...");
-  const [highlightedPoints, setHighlightedPoints] = useState<Position[]>([]);
-
 
 
   const handleReload = () => {
@@ -61,15 +59,6 @@ export default function DetectionsIndex(): ReactElement {
     fetchRobot();
   }, [robot_id]);
 
-  const handleHighlight = (position: { x: number; y: number }) => {
-  setHighlightPoint(position);
-
-  // Clear the highlight after 5 seconds
-  setTimeout(() => {
-    setHighlightPoint(null);
-  }, 5000);
-};
-
   if (isLoading) return <div className="container">Loading...</div>;
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
@@ -99,11 +88,7 @@ export default function DetectionsIndex(): ReactElement {
             {/*  <a role="button" className="secondary">Link</a>*/}
             {/*</Link>*/}
             <TempDetectionsList
-              robot_id={robot_id}
-              onHighlight={(position: Position) =>
-                setHighlightedPoints((prev) => [...prev, position])
-              }
-            />
+              robot_id={robot_id?.toString() || ''} />
           </div>
           <section style={{
              display: 'flex',
@@ -143,7 +128,7 @@ export default function DetectionsIndex(): ReactElement {
                flex: 1,
                minWidth: '300px' // Minimum width before wrapping
              }}>
-               <MapViewer highlightedPoints={highlightedPoints} />
+               <MapViewer />
              </div>
            </section>
       </div>

@@ -19,11 +19,10 @@ type TempDetection = {
 
 interface TempDetectionsListProps {
   robot_id: string;
-  onHighlight: (pos: Position) => void;
 }
 
 
-export default function TempDetectionsList({ robot_id, onHighlight }: TempDetectionsListProps) {
+export default function TempDetectionsList({ robot_id }: TempDetectionsListProps) {
   const [tempDetections, setTempDetections] = useState<TempDetection[]>([])
   const [error, setError] = useState<string | null>(null);
 
@@ -124,7 +123,7 @@ export default function TempDetectionsList({ robot_id, onHighlight }: TempDetect
         toast('Failed to clear!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       } else {
         // On success, also clear the list
-        setTempDetections(prev => []);
+        setTempDetections([]);
         toast('Detections cleared!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       }
     } catch (err) {
@@ -173,14 +172,6 @@ export default function TempDetectionsList({ robot_id, onHighlight }: TempDetect
                 >
                   Save 💾
                 </button>
-                <button
-                  onClick={() => onHighlight(detection.position)}
-                  className="contrast"
-                  style={{ marginRight: '0.5rem' }}
-                >
-                  Show on map 📍
-                </button>
-
                 <button
                   aria-atomic={"true"}
                   onClick={() => handleDelete(detection.id)}

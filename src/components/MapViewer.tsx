@@ -3,11 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import {toast, ToastContainer} from 'react-toastify';
 
-interface MapViewerProps {
-  highlightedPoints: Position[];
-}
 
-function MapViewer({ highlightedPoints }: MapViewerProps) {
+function MapViewer() {
   const [reload, setReload] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [mapUrl, setMapUrl] = useState<string>("https://placehold.co/600x400?text=Loading+map...");
@@ -69,7 +66,6 @@ function MapViewer({ highlightedPoints }: MapViewerProps) {
 
   return (
     <section style={{ textAlign: 'center' }}>
-      <div style={{ position: 'relative', display: 'inline-block' }}>
         <img
           ref={imgRef}
           src={mapUrl}
@@ -79,28 +75,6 @@ function MapViewer({ highlightedPoints }: MapViewerProps) {
           style={{ border: '1px solid #ccc', borderRadius: '8px' }}
           onClick={handleClick}
         />
-    {highlightedPoints?.map((point, idx) => {
-    const x = (point.x - originX) / mapResolution;
-    const y = mapHeight - (point.y - originY) / mapResolution;
-
-    return (
-      <div
-        key={idx}
-        style={{
-          position: 'absolute',
-          left: `${x}px`,
-          top: `${y}px`,
-          width: '10px',
-          height: '10px',
-          backgroundColor: 'red',
-          borderRadius: '50%',
-          transform: 'translate(-1400%, -750%)',
-          pointerEvents: 'none',
-        }}
-      />
-    );
-  })}
-</div>
       <div style={{ marginBottom: '8px' }}>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '0.5rem' }}>
           Auto-update:
