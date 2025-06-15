@@ -53,25 +53,25 @@ export default function Home() {
   return (
     <main className="container">
       <section style={{ maxWidth: "400px", margin: "0 auto", textAlign: "center", marginTop: "5rem" }}>
-        <h1>Welcome to your robot hub</h1>
-        <p>Please log in with your credentials to access your dashboard.</p>
+        <h1>Bienvenid@ al panel de control</h1>
+        <p>Por favor, introduzca sus datos para acceder.</p>
 
         <form onSubmit={login}>
           <input
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="Username"
+            placeholder="Identificador de cliente"
             required
           />
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="Password"
+            placeholder="Contraseña"
             required
           />
-          <button type="submit" disabled={loading} aria-busy={loading}>{loading ? "Logging in..." : "Login"}</button>
+          <button type="submit" disabled={loading} aria-busy={loading}>{loading ? "Entrando..." : "Entrar"}</button>
         </form>
 
         {error && <p style={{ color: "red", marginTop: "1rem" }}>{error}</p>}

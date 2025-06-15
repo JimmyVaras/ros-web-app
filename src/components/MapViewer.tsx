@@ -7,7 +7,7 @@ import {toast, ToastContainer} from 'react-toastify';
 function MapViewer() {
   const [reload, setReload] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
-  const [mapUrl, setMapUrl] = useState<string>("https://placehold.co/600x400?text=Loading+map...");
+  const [mapUrl, setMapUrl] = useState<string>("https://placehold.co/600x400?text=Cargando+mapa...");
   const imgRef = useRef<HTMLImageElement>(null);
 
   // CONFIG — ajustar al mapa
@@ -58,9 +58,9 @@ function MapViewer() {
     });
 
     if (!res.ok) {
-      toast('Failed to send goal!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      toast('Fallo al navegar!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
     } else {
-      toast('Goal sent!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+      toast('Navegando!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
     }
   };
 
@@ -77,7 +77,7 @@ function MapViewer() {
         />
       <div style={{ marginBottom: '8px' }}>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '0.5rem' }}>
-          Auto-update:
+          Actualizar automáticamente:
           <input
             type="checkbox"
             checked={autoRefresh}

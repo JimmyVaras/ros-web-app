@@ -75,16 +75,16 @@ export default function RobotDetail(): ReactElement {
     fetchRobot();
   }, [id]);
 
-  if (isLoading) return <div className="container">Loading...</div>;
+  if (isLoading) return <div className="container">Cargando...</div>;
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
       <Link href="/dashboard" passHref legacyBehavior>
-        <a role="button" className="secondary">Back to dashboard</a>
+        <a role="button" className="secondary">Volver al inicio</a>
       </Link>
     </div>
   );
-  if (!robot) return <div className="container">Robot not found (404)</div>;
+  if (!robot) return <div className="container">Robot no encontrado (404)</div>;
 
   return (
     <div className="container" style={{ marginTop: "2rem", width: "80%"}}>
@@ -96,10 +96,7 @@ export default function RobotDetail(): ReactElement {
                   pathname: '/detections',
                   query: { robot_id: robot.id.toString() }
                 })
-              } > Object Detection </button>
-            <Link href="/ros/detected_objects" passHref legacyBehavior>
-              <a role="button" className="secondary">Live detections</a>
-            </Link>
+              } > Detección de objetos </button>
           <VoiceCommands robot_id={robot.id}/>
           </div>
           <section style={{
@@ -131,7 +128,7 @@ export default function RobotDetail(): ReactElement {
                  style={{ marginTop: '1rem' }}
                  className="secondary"
                >
-                 Restart video ⟳
+                 Reiniciar vídeo ⟳
                </button>
              </div>
 

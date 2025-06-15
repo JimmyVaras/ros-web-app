@@ -53,14 +53,14 @@ export default function Dashboard() {
   return (
     <main className="container">
       <section style={{ maxWidth: "600px", margin: "0 auto", textAlign: "center", marginTop: "5rem" }}>
-        <h1>Dashboard</h1>
+        <h1>Inicio</h1>
 
         {error ? (
           <div className="alert alert-error">{error}</div>
         ) : (
           <>
             {robots.length === 0 ? (
-              <p>No robots found.</p>
+              <p>No se encontraron robots.</p>
             ) : (
               <ul style={{ padding: 0 }}>
                 {robots.map((robot) => (
@@ -101,7 +101,7 @@ export default function Dashboard() {
         <button className="contrast"
           style={{ backgroundColor: "#960012", color: "#fff" }}
           onClick={logout}>
-          Logout
+          Cerrar sesión
         </button>
       </section>
     </main>

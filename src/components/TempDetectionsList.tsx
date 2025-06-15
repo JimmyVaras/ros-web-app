@@ -62,16 +62,16 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
       if (response.status === 409) {
         // Conflict due to duplicate → remove from list
         setTempDetections(prev => prev.filter(det => det.id !== id));
-        toast('Failed to save! A duplicate was found', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+        toast('Fallo al guardar! Se encontró un duplicado', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       } else if (!response.ok) {
-        toast('Failed to save!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+        toast('Fallo al guardar!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       } else {
         // On success, also remove the saved detection
         setTempDetections(prev => prev.filter(det => det.id !== id));
-        toast('Detection saved!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+        toast('Detección guardada!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save temporary detection');
+      setError(err instanceof Error ? err.message : 'Fallo al guardar la detección temporal');
     }
   };
 
@@ -86,14 +86,14 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
         method: 'DELETE',
       });
       if (!response.ok) {
-        toast('Failed to delete!', {
+        toast('Fallo al borrar!', {
           closeButton: false,
           theme: 'colored',
           pauseOnFocusLoss: false,
         });
       } else {
         setTempDetections(prev => prev.filter(det => det.id !== id));
-        toast('Temporary detection deleted!', {
+        toast('Borrada!', {
           closeButton: false,
           theme: 'colored',
           pauseOnFocusLoss: false,
@@ -105,7 +105,7 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
         }, 2300);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete temporary detection');
+      setError(err instanceof Error ? err.message : 'Fallo al borrar temporary detection');
     }
   };
 
@@ -120,14 +120,14 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
       });
 
       if (!response.ok) {
-        toast('Failed to clear!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+        toast('Fallor al borrar!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       } else {
         // On success, also clear the list
         setTempDetections([]);
-        toast('Detections cleared!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
+        toast('Detecciones temporales borradas!', {closeButton: false, theme: 'colored', pauseOnFocusLoss: false});
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to clear temporary detections');
+      setError(err instanceof Error ? err.message : 'Fallo al borrar las detecciones temporales');
     }
   };
 
@@ -140,7 +140,7 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
       <Link href="/dashboard" passHref legacyBehavior>
-        <a role="button" className="secondary">Back to dashboard</a>
+        <a role="button" className="secondary">Vuelta al inicio</a>
       </Link>
     </div>
   );
@@ -155,7 +155,7 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
             style={{ marginRight: '0.5rem' }}
             onClick={() => handleClear()}
           >
-            Clear all 🗑️
+            Borrar todas 🗑️
           </button>
           {tempDetections.map((detection) => (
             <article key={detection.id} style={{ padding: '1rem' }}>
@@ -163,21 +163,21 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
                 <strong>{detection.label}</strong> ({detection.confidence}%)
               </header>
               <p>
-                Position: x={detection.position.x.toFixed(2)}, y={detection.position.y.toFixed(2)}
+                Posición: x={detection.position.x.toFixed(2)}, y={detection.position.y.toFixed(2)}
               </p>
               <footer>
                 <button
                   style={{ marginRight: '0.5rem' }}
                   onClick={() => handleSave(detection.id)}
                 >
-                  Save 💾
+                  Guardar 💾
                 </button>
                 <button
                   aria-atomic={"true"}
                   onClick={() => handleDelete(detection.id)}
                   className="secondary"
                 >
-                  Remove 🗑️
+                  Borrar 🗑️
                 </button>
               </footer>
             </article>

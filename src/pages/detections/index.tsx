@@ -64,18 +64,18 @@ export default function DetectionsIndex(): ReactElement {
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
       <Link href="/dashboard" passHref legacyBehavior>
-        <a role="button" className="secondary">Back to dashboard</a>
+        <a role="button" className="secondary">Volver al inicio</a>
       </Link>
     </div>
   );
 
   if (!router.isReady) {
-    return <div>Loading...</div>;
+    return <div>Cargando...</div>;
   }
 
   return (
     <div className="container" style={{ marginTop: "2rem", width: "80%"}}>
-      <h1>Real Time Detections</h1>
+      <h1>Detecciones en tiempo real</h1>
       <div className="grid">
           <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "0.5rem", marginTop: "1.5rem" }}>
             <button onClick={() =>
@@ -83,10 +83,7 @@ export default function DetectionsIndex(): ReactElement {
                   pathname: '/detections/database',
                   query: { robot_id: robot_id }
                 })
-              } > Objects Stored </button>
-            {/*<Link href="/" passHref legacyBehavior>*/}
-            {/*  <a role="button" className="secondary">Link</a>*/}
-            {/*</Link>*/}
+              } > Objectos detectados </button>
             <TempDetectionsList
               robot_id={robot_id?.toString() || ''} />
           </div>
@@ -119,7 +116,7 @@ export default function DetectionsIndex(): ReactElement {
                  style={{ marginTop: '1rem' }}
                  className="secondary"
                >
-                 Restart video ⟳
+                 Reiniciar video ⟳
                </button>
              </div>
 

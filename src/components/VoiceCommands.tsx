@@ -88,14 +88,14 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = 'es-ES';
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
       setTranscript(transcript);
       console.log("Heard:", transcript);
 
-      const navigateMatch = transcript.match(/navigate to (.+)/);
+      const navigateMatch = transcript.match(/navega a (.+)/);
       if (navigateMatch) {
         const label = navigateMatch[1].toLowerCase();
         const match = detections.find(d => d.label.toLowerCase() === label);
@@ -103,8 +103,8 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
           handleNavigate(match.id, navigateMatch[1]);
         } else {
           setGoalSent("")
-          setFailedMatch(`No detection found with label "${label}"`)
-          console.warn(`No detection found with label "${label}"`);
+          setFailedMatch(`No se encontró el objeto "${label}"`)
+          console.warn(`No se encontró el objeto "${label}"`);
         }
       }
     };
@@ -145,19 +145,19 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
   return (
     <section style={{marginTop: '2rem'}}>
         {isListening ? <p style={{ fontStyle: 'italic', color: 'gray' }}>
-          {transcript ? `🗣️ "${transcript}"` : 'Listening...'}
+          {transcript ? `🗣️ "${transcript}"` : 'Escuchando...'}
         </p> : <></>}
         {(isListening && failedMatch) ? <p style={{ color: 'red' }}>
           {failedMatch ? `${failedMatch}` : ''}
         </p> : <></>}
         {(isListening && goalSent) ? <p style={{ color: 'green' }}>
-          {goalSent ? `➡️ Navigating to ${goalSent}...` : ''}
+          {goalSent ? `➡️ Navengado a ${goalSent}...` : ''}
         </p> : <></>}
         <button
           onClick={() => setIsListening(!isListening)}
           className={isListening ? 'contrast' : 'outline'}
           style={{backgroundColor: isListening ? 'red' : '', color: isListening ? 'white' : ''}}>
-          {isListening ? '🎙️ Stop Listening' : '🎙️ Start Listening'}
+          {isListening ? '🎙️ Parar' : '🎙️ Iniciar'}
         </button>
     </section>
   );

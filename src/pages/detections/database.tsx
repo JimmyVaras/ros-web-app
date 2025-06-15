@@ -143,9 +143,9 @@ export default function DetectionsPage() {
   if (isLoading) return (
     <div className="container">
       <article aria-busy="true" style={{textAlign: 'center', marginTop: '2rem'}}>
-        Loading detections...
+        Cargando detecciones...
         <p style={{textAlign: 'center', marginTop: '1rem', fontStyle: 'italic'}}>
-          It can take up to 30 seconds if the backend server is sleeping
+          Puede tomar hasta 30 segundos si el servidor está en reposo
         </p>
       </article>
     </div>
@@ -155,7 +155,7 @@ export default function DetectionsPage() {
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
       <Link href="/dashboard" passHref legacyBehavior>
-        <a role="button" className="secondary">Back to dashboard</a>
+        <a role="button" className="secondary">Volver al inicio</a>
       </Link>
     </div>
   );
@@ -164,14 +164,14 @@ export default function DetectionsPage() {
     <div className="container">
       <article style={{marginTop: '2rem'}}>
         <header style={{marginBottom: '2rem'}}>
-          <h1>Object Detections</h1>
-          <p>List of all detected objects in the database</p>
+          <h1>Detección de objetos</h1>
+          <p>Lista de todos los objetos detectados</p>
           <button
             onClick={() => setIsListening(!isListening)}
             className={isListening ? 'contrast' : 'outline'}
             style={{backgroundColor: isListening ? 'red' : '', color: isListening ? 'white' : ''}}
           >
-            {isListening ? '🎙️ Stop Listening' : '🎙️ Start Listening'}
+            {isListening ? '🎙️ Parar' : '🎙️ Iniciar'}
           </button>
         </header>
 
@@ -181,10 +181,10 @@ export default function DetectionsPage() {
               <table role="grid" className="striped">
                 <thead>
                 <tr>
-                  <th scope="col">ID</th>
-                  <th scope="col">Label</th>
-                  <th scope="col">Position</th>
-                  <th scope="col">Actions</th>
+                  <th scope="col">Id</th>
+                  <th scope="col">Nombre</th>
+                  <th scope="col">Posición</th>
+                  <th scope="col">Acciones</th>
                 </tr>
                 </thead>
                 <tbody>
@@ -199,13 +199,13 @@ export default function DetectionsPage() {
                           onClick={() => handleNavigate(detection.id)}
                           className="outline"
                         >
-                          Navigate 🚀
+                          Navegar 🚀
                         </button>
                         <button
                           onClick={() => handleDelete(detection.id)}
                           className="secondary"
                         >
-                          Remove 🗑️
+                          Borrar 🗑️
                         </button>
                       </div>
                     </td>
@@ -219,7 +219,7 @@ export default function DetectionsPage() {
 
         {detections.length === 0 && (
           <div className="empty">
-            <p>No detections found</p>
+            <p>No se encontraron detecciones.</p>
           </div>
         )}
       </article>
