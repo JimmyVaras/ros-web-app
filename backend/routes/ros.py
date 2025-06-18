@@ -1,4 +1,5 @@
 import time
+import math
 from typing import Annotated, Dict
 
 from fastapi import Depends, APIRouter, HTTPException, status
@@ -31,23 +32,36 @@ db_dependency = Annotated[Session, Depends(get_db)]
 router = APIRouter(prefix="/ros", tags=["ros"])
 
 
-def publish_goal(position_dict):
+def publish_goal(position_dict_obj, position_dict_nav):
+    def yaw_to_quaternion(yaw):
+        q = {}
+        q['x'] = 0.0
+        q['y'] = 0.0
+        q['z'] = math.sin(yaw / 2.0)
+        q['w'] = math.cos(yaw / 2.0)
+        return q
+
+    dx = position_dict_obj['x'] - position_dict_nav['x']
+    dy = position_dict_obj['y'] - position_dict_nav['y']
+    yaw = math.atan2(dy, dx)
+    quat = yaw_to_quaternion(yaw)
+
     message = {
         'header': {
-            'stamp': {'secs': 0, 'nsecs': 0},  # You can later update with real ROS time
+            'stamp': {'secs': 0, 'nsecs': 0},
             'frame_id': 'map'
         },
         'pose': {
             'position': {
-                'x': position_dict['x'],
-                'y': position_dict['y'],
-                'z': position_dict.get('z', 0.0)
+                'x': position_dict_nav['x'],
+                'y': position_dict_nav['y'],
+                'z': 0.0
             },
             'orientation': {
-                'x': 0.0,
-                'y': 0.0,
-                'z': 0.0,
-                'w': 1.0
+                'x': quat['x'],
+                'y': quat['y'],
+                'z': quat['z'],
+                'w': quat['w']
             }
         }
     }
@@ -73,6 +87,7 @@ def publish_goal(position_dict):
         return False
 
 
+
 # POST endpoint to navigate to the detection
 @router.post("/{detection_id}/navigate")
 async def navigate_detection(detection_id: int, db: db_dependency, current_user: User = Depends(get_current_user)):
@@ -91,11 +106,11 @@ async def navigate_detection(detection_id: int, db: db_dependency, current_user:
         )
 
     try:
-        result = publish_goal(db_detection.position)
+        result = publish_goal(db_detection.position_obj, db_detection.position_nav)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 
-    return {"message": "Navigation goal published", "position": str(db_detection.position), "status": str(result)}
+    return {"message": "Navigation goal published", "position": str(db_detection.position_nav), "status": str(result)}
 
 @router.post("/navigate")
 def navigate_coords(position: Dict[str, float], current_user: User = Depends(get_current_user)):
@@ -160,3 +175,20 @@ def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
     r = requests.get(f"{tunnel_url}/detections/stream", headers=headers, stream=True)
 
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
+
+@router.post("/move-back")
+def move_backwards():
+    try:
+        response = requests.post(
+            tunnel_url + "/move-back",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Message successfully published via API.")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to move back: {e}")
+        return False

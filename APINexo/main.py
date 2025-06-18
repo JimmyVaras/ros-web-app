@@ -13,6 +13,8 @@ import numpy as np
 import base64
 import time
 
+from aux import move_backwards
+
 # Añadir .env, solo para usar en tunel sin auth
 #EXPECTED_TUNNEL_TOKEN = os.getenv("TUNNEL_AUTH_TOKEN")
 #EXPECTED_FULL_TOKEN = f"tunnel {EXPECTED_TUNNEL_TOKEN}"
@@ -109,7 +111,7 @@ def mjpeg_generator():
                 b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
             )
         time.sleep(0.1)  # ~10 FPS
-        
+
  # TODO: fix auth here
 @app.get("/camera/stream")
 async def stream_camera():
@@ -241,4 +243,9 @@ async def disable_detections_stream():
     global stream_camera_enabled
     stream_camera_enabled = False
     return {"status": "disabled"}
+
+@app.post("/move-back")
+async def move_back():
+    move_backwards()
+    return {"status": "published"}
 

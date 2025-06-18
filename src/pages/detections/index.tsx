@@ -11,7 +11,7 @@ export default function DetectionsIndex(): ReactElement {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(Date.now());
-  const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400?text=Loading+camera...");
+  const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400?text=Cargando+cámara...");
 
 
   const handleReload = () => {
@@ -44,8 +44,8 @@ export default function DetectionsIndex(): ReactElement {
 
         if (!response.ok) {
           setError(response.status === 401
-            ? "You don't have access to this robot"
-            : "Failed to fetch robot")
+            ? "No tienes permiso para acceder a este robot"
+            : "Fallo al cargar robot")
         }
 
       } catch (error) {
@@ -59,7 +59,7 @@ export default function DetectionsIndex(): ReactElement {
     fetchRobot();
   }, [robot_id]);
 
-  if (isLoading) return <div className="container">Loading...</div>;
+  if (isLoading) return <div className="container">Cargando...</div>;
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
@@ -125,7 +125,7 @@ export default function DetectionsIndex(): ReactElement {
                flex: 1,
                minWidth: '300px' // Minimum width before wrapping
              }}>
-               <MapViewer />
+               <MapViewer interactiveMap={false} />
              </div>
            </section>
       </div>

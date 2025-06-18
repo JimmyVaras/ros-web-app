@@ -13,7 +13,8 @@ type Position = {
 type Detection = {
   id: number
   label: string
-  position: Position
+  position_obj: Position
+  position_nav: Position
 }
 
 export default function DetectionsPage() {
@@ -38,8 +39,8 @@ export default function DetectionsPage() {
 
       if (!response.ok) {
         setError(response.status === 401
-          ? "You don't have access to this robot"
-          : "Failed to fetch robot")
+          ? "No tienes permiso para acceder a este robot"
+          : "Fallo al cargar robot")
       }
 
       const data = await response.json();
@@ -192,7 +193,7 @@ export default function DetectionsPage() {
                   <tr key={detection.id}>
                     <td><code>{detection.id}</code></td>
                     <td><strong>{detection.label}</strong></td>
-                    <td>x: {detection.position["x"]}, y: {detection.position["y"]}</td>
+                    <td>x: {detection.position_obj["x"]}, y: {detection.position_obj["y"]}</td>
                     <td>
                       <div className="grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
                         <button

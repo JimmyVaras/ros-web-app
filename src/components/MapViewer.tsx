@@ -3,8 +3,12 @@
 import { useState, useEffect, useRef } from 'react';
 import {toast, ToastContainer} from 'react-toastify';
 
+interface MapViewerProps {
+  interactiveMap?: boolean;
+}
 
-function MapViewer() {
+function MapViewer({ interactiveMap = true }: MapViewerProps) {
+  const interactive = interactiveMap;
   const [reload, setReload] = useState(0);
   const [autoRefresh, setAutoRefresh] = useState(false);
   const [mapUrl, setMapUrl] = useState<string>("https://placehold.co/600x400?text=Cargando+mapa...");
@@ -72,8 +76,8 @@ function MapViewer() {
           alt="Map"
           width={mapWidth}
           height={mapHeight}
-          style={{ border: '1px solid #ccc', borderRadius: '8px' }}
-          onClick={handleClick}
+          style={{ border: '1px solid #ccc', borderRadius: '8px', cursor: interactive ? "crosshair" : "default"}}
+          onClick={interactive ? handleClick : undefined}
         />
       <div style={{ marginBottom: '8px' }}>
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginTop: '0.5rem' }}>

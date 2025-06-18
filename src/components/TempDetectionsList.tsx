@@ -14,7 +14,8 @@ type TempDetection = {
     id: number
     label: string
     confidence: number
-    position: Position
+    position_obj: Position
+    position_nav: Position
   }
 
 interface TempDetectionsListProps {
@@ -38,8 +39,8 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
 
       if (!response.ok) {
         setError(response.status === 401
-          ? "You don't have access to this robot"
-          : "Failed to fetch robot")
+          ? "No tienes permiso para acceder a este robot"
+          : "Fallo al cargar robot")
       }
 
       const data = await response.json();
@@ -163,7 +164,7 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
                 <strong>{detection.label}</strong> ({detection.confidence}%)
               </header>
               <p>
-                Posición: x={detection.position.x.toFixed(2)}, y={detection.position.y.toFixed(2)}
+                Posición: x={detection.position_obj.x.toFixed(2)}, y={detection.position_obj.y.toFixed(2)}
               </p>
               <footer>
                 <button

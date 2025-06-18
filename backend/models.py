@@ -9,7 +9,8 @@ class Detection(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     label = Column(String, index=True)
-    position = Column(JSON)
+    position_nav = Column(JSON)
+    position_obj = Column(JSON)
     robot_id = Column(Integer, ForeignKey("robots.id"))
     robot = relationship("Robot", back_populates="detections")
 
@@ -18,7 +19,8 @@ class TempDetection(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     label = Column(String, index=True)
-    position = Column(JSON)
+    position_nav = Column(JSON)
+    position_obj = Column(JSON)
     robot_id = Column(Integer, ForeignKey("robots.id"))
     robot = relationship("Robot", back_populates="temp_detections")
     confidence = Column(Integer)

@@ -52,8 +52,8 @@ export default function RobotDetail(): ReactElement {
 
         if (!response.ok) {
           setError(response.status === 401
-            ? "You don't have access to this robot"
-            : "Failed to fetch robot")
+            ? "No tienes permiso para acceder a este robot"
+            : "Fallo al cargar robot")
         }
 
         const data = await response.json();

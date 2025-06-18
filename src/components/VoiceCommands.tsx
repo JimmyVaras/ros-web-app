@@ -39,8 +39,8 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
 
       if (!response.ok) {
         setError(response.status === 401
-          ? "You don't have access to this robot"
-          : "Failed to fetch robot")
+          ? "No tienes permiso para acceder a este robot"
+          : "Fallo al cargar robot")
       }
 
       const data = await response.json();
@@ -60,18 +60,36 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
         }, method: 'POST',
       });
       if (!response.ok) {
-        setError('Failed to navigate to detection');
+        setError('Fallo al navegar al objeto');
       } else if (response.ok) {
         setFailedMatch("")
-        setGoalSent(matchingText)
+        setGoalSent(`Navegando a ${matchingText}`)
       }
-
       await fetchDetections();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to navigate');
+      setError(err instanceof Error ? err.message : 'Error al navegar');
     }
   };
 
+  const handleMoveBack = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/ros/move-back`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }, method: 'POST',
+      });
+      if (!response.ok) {
+        setError('Fallo al retroceder');
+      } else if (response.ok) {
+        setFailedMatch("")
+        setGoalSent("Retrocediendo")
+      }
+      await fetchDetections();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fallo al retroceder');
+    }
+  };
 
   useEffect(() => {
     fetchDetections();
@@ -80,7 +98,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || (window as Window).webkitSpeechRecognition;
     if (!SpeechRecognition) {
-      setFailedMatch('Speech recognition not supported in this browser.');
+      setFailedMatch('El reconocimiento de voz no está soportado por este navegador.');
       console.warn('Speech recognition not supported in this browser.');
       return;
     }
@@ -95,6 +113,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       setTranscript(transcript);
       console.log("Heard:", transcript);
 
+      // CASO NAVEGACIÓN A OBJETO
       const navigateMatch = transcript.match(/navega a (.+)/);
       if (navigateMatch) {
         const label = navigateMatch[1].toLowerCase();
@@ -102,11 +121,17 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
         if (match) {
           handleNavigate(match.id, navigateMatch[1]);
         } else {
-          setGoalSent("")
-          setFailedMatch(`No se encontró el objeto "${label}"`)
+          setGoalSent("");
+          setFailedMatch(`No se encontró el objeto "${label}"`);
           console.warn(`No se encontró el objeto "${label}"`);
         }
       }
+
+      // CASO RETROCESO
+      const moveBackMatch = transcript.match(/retrocede/);
+      if (moveBackMatch) {
+          handleMoveBack();
+        }
     };
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
@@ -137,7 +162,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
       <div>Error: {error}.</div>
       <Link href="/dashboard" passHref legacyBehavior>
-        <a role="button" className="secondary">Back to dashboard</a>
+        <a role="button" className="secondary">Volver al inicio</a>
       </Link>
     </div>
   );
@@ -151,13 +176,13 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
           {failedMatch ? `${failedMatch}` : ''}
         </p> : <></>}
         {(isListening && goalSent) ? <p style={{ color: 'green' }}>
-          {goalSent ? `➡️ Navengado a ${goalSent}...` : ''}
+          {goalSent ? `➡️ ${goalSent}...` : ''}
         </p> : <></>}
         <button
           onClick={() => setIsListening(!isListening)}
           className={isListening ? 'contrast' : 'outline'}
           style={{backgroundColor: isListening ? 'red' : '', color: isListening ? 'white' : ''}}>
-          {isListening ? '🎙️ Parar' : '🎙️ Iniciar'}
+          {isListening ? '🎙️ Parar' : '🎙️ Escuchar'}
         </button>
     </section>
   );

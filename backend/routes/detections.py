@@ -27,10 +27,14 @@ class MarkerPosition(BaseModel):
     y: float
     z: float
 
+    def __json__(self):
+        return {'x': self.x, 'y': self.y, 'z': self.z}
+
 
 class MarkerData(BaseModel):
     name: str
-    position: MarkerPosition
+    position_obj: MarkerPosition
+    position_nav: MarkerPosition
     confidence: float
     robot_id: int
 
@@ -98,10 +102,10 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
         existing_detections = db.query(Detection).filter_by(label=marker.name).all()
 
         # Verificar si alguna está dentro del umbral de 0.5m
-        duplicate = any(is_close(d.position, new_pos) for d in existing_detections)
+        duplicate = any(is_close(d.position_obj, new_pos) for d in existing_detections)
 
         if not duplicate:
-            detection = Detection(label=marker.name, position=new_pos, robot_id=marker.robot_id)
+            detection = Detection(label=marker.name, position_obj=new_pos, robot_id=marker.robot_id)
             db.add(detection)
             added_count += 1
 
@@ -111,24 +115,25 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
 # POST endpoint to save a temporal detection
 @router.post("/temp")
 def save_markers(data: MarkerList, db: Session = Depends(get_db)):
-    print("entered endpoint")
     added_count = 0
 
     for marker in data.markers:
         new_pos = {
-            "x": marker.position.x,
-            "y": marker.position.y,
-            "z": marker.position.z
+            "x": marker.position_obj.x,
+            "y": marker.position_obj.y,
+            "z": marker.position_obj.z
         }
 
         # Buscar detecciones existentes con el mismo label
-        existing_detections = db.query(TempDetection).filter_by(label=marker.name).all()
+        existing_detections_temp = db.query(TempDetection).filter_by(label=marker.name).all()
+        existing_detections = db.query(Detection).filter_by(label=marker.name).all()
 
         # Verificar si alguna está dentro del umbral de 0.5m
-        duplicate = any(is_close(d.position, new_pos) for d in existing_detections)
+        duplicate_temp = any(is_close(d.position_obj, new_pos) for d in existing_detections_temp)
+        duplicate = any(is_close(d.position_obj, new_pos) for d in existing_detections)
 
-        if not duplicate:
-            detection = TempDetection(label=marker.name, position=new_pos, robot_id=marker.robot_id, confidence=int(marker.confidence))
+        if not duplicate_temp and not duplicate:
+            detection = TempDetection(label=marker.name, position_obj=new_pos, position_nav=marker.position_nav.__json__(), robot_id=marker.robot_id, confidence=int(marker.confidence))
             db.add(detection)
             added_count += 1
 
@@ -148,8 +153,8 @@ def save_markers(temp_detection_id: int, db: Session = Depends(get_db)):
 
     try:
         new_pos = {
-            "x": db_temp_detection.position["x"],
-            "y": db_temp_detection.position["y"],
+            "x": db_temp_detection.position_obj["x"],
+            "y": db_temp_detection.position_obj["y"],
             "z": 0
         }
 
@@ -157,7 +162,7 @@ def save_markers(temp_detection_id: int, db: Session = Depends(get_db)):
         existing_detections = db.query(Detection).filter_by(label=db_temp_detection.label).all()
 
         # Verificar si alguna está dentro del umbral de 0.5m
-        duplicate = any(is_close(d.position, new_pos) for d in existing_detections)
+        duplicate = any(is_close(d.position_obj, new_pos) for d in existing_detections)
 
         if duplicate:
             db.rollback()  # Ensure no partial changes are left
@@ -166,7 +171,7 @@ def save_markers(temp_detection_id: int, db: Session = Depends(get_db)):
                 detail="Duplicate object found closer than 0.5m"
             )
 
-        detection = Detection(label=db_temp_detection.label, position=new_pos, robot_id=db_temp_detection.robot_id)
+        detection = Detection(label=db_temp_detection.label, position_obj=new_pos, position_nav=db_temp_detection.position_nav, robot_id=db_temp_detection.robot_id)
         db.add(detection)
         db.delete(db_temp_detection)
         db.commit()
