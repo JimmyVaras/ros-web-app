@@ -19,7 +19,7 @@ export default function RobotDetail(): ReactElement {
   const [error, setError] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(Date.now());
   const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400.png");
-
+  const [cameraEnabled, setCameraEnabled] = useState(true);
 
   const handleReload = () => {
     setReloadKey(Date.now());  // Cambia la clave para forzar reload
@@ -75,6 +75,20 @@ export default function RobotDetail(): ReactElement {
     fetchRobot();
   }, [id]);
 
+  const toggleCamera = async () => {
+      const newStatus = !cameraEnabled;
+      setCameraEnabled(newStatus);
+
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+        await fetch(`${apiUrl}/ros/camera/stream/${newStatus ? 'enable' : 'disable'}`, {
+          method: 'POST',
+        });
+      } catch (error) {
+        console.error('Error toggling camera:', error);
+      }
+    };
+
   if (isLoading) return <div className="container">Cargando...</div>;
   if (error) return (
     <div className="container grid" style={{ marginTop: '10%', placeItems: 'center', flexDirection: 'column', display: 'flex' }}>
@@ -122,14 +136,21 @@ export default function RobotDetail(): ReactElement {
                    border: '1px solid #ccc'
                  }}
                />
-               <button
-                 onClick={handleReload}
-                 role="button"
-                 style={{ marginTop: '1rem' }}
-                 className="secondary"
-               >
-                 Reiniciar vídeo ⟳
-               </button>
+               <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', alignItems: 'center' }}>
+                  <button onClick={handleReload} role="button" className="secondary">
+                    Reiniciar vídeo ⟳
+                  </button>
+
+                  <label className="form-switch">
+                    <input
+                      type="checkbox"
+                      role="switch"
+                      checked={cameraEnabled}
+                      onChange={toggleCamera}
+                    />
+                    <i>Cámara {cameraEnabled ? 'activada' : 'desactivada'}</i>
+                  </label>
+                </div>
              </div>
 
              <div style={{

@@ -192,3 +192,37 @@ def move_backwards():
     except requests.RequestException as e:
         print(f"Failed to move back: {e}")
         return False
+
+@router.post("/camera/stream/disable")
+def disable_stream_camera():
+    try:
+        response = requests.post(
+            tunnel_url + "/camera/stream/disable",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Message successfully published via API.")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to disable camera stream: {e}")
+        return False
+
+@router.post("/camera/stream/enable")
+def enable_stream_camera():
+    try:
+        response = requests.post(
+            tunnel_url + "/camera/stream/enable",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Message successfully published via API.")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to enable camera stream: {e}")
+        return False

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, Header, HTTPException, status
+from fastapi import FastAPI, Request, Header, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import roslibpy
@@ -13,6 +13,7 @@ import numpy as np
 import base64
 import time
 
+import camera
 from aux import move_backwards
 
 # Añadir .env, solo para usar en tunel sin auth
@@ -49,11 +50,7 @@ class PublishRequest(BaseModel):
     type: str
     message: dict
 
-# To activate/deactivate que encoding of the Stream and reduce load
-stream_detections_enabled = True
-stream_camera_enabled = True
-
-
+lock = threading.Lock()
 
 @app.post("/publish")
 async def publish_message(data: PublishRequest):
@@ -67,55 +64,6 @@ async def publish_message(data: PublishRequest):
     except Exception as e:
         return {"success": False, "error": str(e)}
 
-latest_image = None
-lock = threading.Lock()
-
-# Subscriber que actualiza latest_image
-def subscribe_to_camera():
-    def callback(message):
-        global latest_image
-        try:
-            # Decodificar la imagen base64 si estás usando rosbridge con sensor_msgs/CompressedImage
-            img_data = base64.b64decode(message['data'])
-            np_arr = np.frombuffer(img_data, np.uint8)
-            frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
-
-            with lock:
-                latest_image = frame
-        except Exception as e:
-            print(f"Error decoding image: {e}")
-
-    image_topic = roslibpy.Topic(ros, '/camera/rgb/image_raw/compressed', 'sensor_msgs/CompressedImage')
-    image_topic.subscribe(callback)
-
-# Lanza el thread de suscripción al iniciar
-threading.Thread(target=subscribe_to_camera, daemon=True).start()
-
-# Generador MJPEG
-def mjpeg_generator():
-    while True:
-        if not stream_camera_enabled:
-            time.sleep(0.5)
-            continue
-
-        with lock:
-            if latest_image is not None:
-                ret, jpeg = cv2.imencode('.jpg', latest_image, [int(cv2.IMWRITE_JPEG_QUALITY), 50]) # Comprimido al 50%
-                frame = jpeg.tobytes()
-            else:
-                frame = None
-
-        if frame:
-            yield (
-                b'--frame\r\n'
-                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
-            )
-        time.sleep(0.1)  # ~10 FPS
-
- # TODO: fix auth here
-@app.get("/camera/stream")
-async def stream_camera():
-    return StreamingResponse(mjpeg_generator(), media_type='multipart/x-mixed-replace; boundary=frame')
 
 latest_map = None
 latest_pose = None
@@ -232,20 +180,11 @@ async def disable_detections_stream():
     stream_detections_enabled = False
     return {"status": "disabled"}
 
-@app.post("/camera/stream/enable")
-async def enable_detections_stream():
-    global stream_camera_enabled
-    stream_camera_enabled = True
-    return {"status": "enabled"}
-
-@app.post("/camera/stream/disable")
-async def disable_detections_stream():
-    global stream_camera_enabled
-    stream_camera_enabled = False
-    return {"status": "disabled"}
-
 @app.post("/move-back")
 async def move_back():
     move_backwards()
     return {"status": "published"}
 
+api_router = APIRouter()
+api_router.include_router(camera.router)
+app.include_router(api_router)
