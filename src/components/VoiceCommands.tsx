@@ -58,14 +58,14 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       {
         pattern: /avanza/,
         action: () => {
-          // Aquí podrías llamar a un endpoint de "avanzar", que deberías implementar.
+          // TODO
           console.log("Comando: avanzar");
         }
       },
       {
         pattern: /vuelta 360/,
         action: () => {
-          // Igual, endpoint para giro completo.
+          // TODO
           console.log("Comando: vuelta 360");
         }
       },
@@ -73,6 +73,18 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
         pattern: /retrocede/,
         action: () => {
           handleMoveBack();
+        }
+      },
+      {
+        pattern: /inicia patrulla/,
+        action: () => {
+          patrol(true);
+        }
+      },
+      {
+        pattern: /(fin|finaliza|termina) patrulla/,
+        action: () => {
+          patrol(false);
         }
       }
     ];
@@ -142,6 +154,26 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       await fetchDetections();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Fallo al retroceder');
+    }
+  };
+
+  const patrol = async (isStart: boolean) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/ros/patrol/${isStart ? 'start' : 'stop'}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }, method: 'POST',
+      });
+      if (!response.ok) {
+        setError(isStart ? 'Fallo al patrullar' : 'Fallo al detener patrullaje');
+      } else if (response.ok) {
+        setFailedMatch("")
+        setGoalSent(isStart ? "Iniciando patrullaje" : "Finalizando patrullaje")
+      }
+      await fetchDetections();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : (isStart ? 'Fallo al patrullar' : 'Fallo al detener patrullaje'));
     }
   };
 

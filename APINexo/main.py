@@ -2,7 +2,6 @@ from fastapi import FastAPI, Request, Header, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import roslibpy
-import os
 from PIL import Image, ImageDraw
 from io import BytesIO
 
@@ -12,13 +11,10 @@ import cv2
 import numpy as np
 import base64
 import time
+import subprocess
 
 import camera
 from aux import move_backwards
-
-# Añadir .env, solo para usar en tunel sin auth
-#EXPECTED_TUNNEL_TOKEN = os.getenv("TUNNEL_AUTH_TOKEN")
-#EXPECTED_FULL_TOKEN = f"tunnel {EXPECTED_TUNNEL_TOKEN}"
 
 app = FastAPI()
 
@@ -184,6 +180,36 @@ async def disable_detections_stream():
 async def move_back():
     move_backwards()
     return {"status": "published"}
+
+patrol_process = None
+
+@app.post("/start_patrol")
+def start_patrol():
+    global patrol_process
+    if patrol_process is not None and patrol_process.poll() is None:
+        return {"status": "already running"}
+
+    # Ajusta el comando según tu nodo y ruta
+    command = [
+        "roslaunch",
+        "jimmy_tools_pkg",
+        "patrol.launch"
+    ]
+
+    patrol_process = subprocess.Popen(command)
+    return {"status": "patrol started"}
+
+# TODO: no se elimina el último destino... Mandar a inicio al apagar el patrol?
+@app.post("/stop_patrol")
+def stop_patrol():
+    global patrol_process
+    if patrol_process is None or patrol_process.poll() is not None:
+        return {"status": "patrol not running"}
+
+    patrol_process.terminate()  # envía SIGTERM
+    patrol_process.wait(timeout=5)
+    patrol_process = None
+    return {"status": "patrol stopped"}
 
 api_router = APIRouter()
 api_router.include_router(camera.router)

@@ -226,3 +226,37 @@ def enable_stream_camera():
     except requests.RequestException as e:
         print(f"Failed to enable camera stream: {e}")
         return False
+
+@router.post("/patrol/start")
+def start_patrol():
+    try:
+        response = requests.post(
+            tunnel_url + "/start_patrol",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Message successfully published via API.")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to start patrol: {e}")
+        return False
+
+@router.post("/patrol/stop")
+def stop_patrol():
+    try:
+        response = requests.post(
+            tunnel_url + "/stop_patrol",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Message successfully published via API.")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to stop patrol: {e}")
+        return False
