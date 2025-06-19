@@ -27,6 +27,61 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
   const [failedMatch, setFailedMatch] = useState<string>('');
   const [goalSent, setGoalSent] = useState<string>('');
 
+  const voiceCommands: {
+      pattern: RegExp,
+      action: (match: RegExpMatchArray) => void
+    }[] = [
+      {
+        pattern: /navega (?:a|al|a la) (.+)/,
+        action: (match) => {
+          const label = cleanLabel(match[1]);
+          const obj = detections.find(d => d.label.toLowerCase() === label);
+          if (obj) handleNavigate(obj.id, match[1]);
+          else {
+            setGoalSent("");
+            setFailedMatch(`No se encontró el objeto "${label}"`);
+          }
+        }
+      },
+      {
+        pattern: /ve (?:a|al|a la) (.+)/,
+        action: (match) => {
+          const label = cleanLabel(match[1]);
+          const obj = detections.find(d => d.label.toLowerCase() === label);
+          if (obj) handleNavigate(obj.id, match[1]);
+          else {
+            setGoalSent("");
+            setFailedMatch(`No se encontró el objeto "${label}"`);
+          }
+        }
+      },
+      {
+        pattern: /avanza/,
+        action: () => {
+          // Aquí podrías llamar a un endpoint de "avanzar", que deberías implementar.
+          console.log("Comando: avanzar");
+        }
+      },
+      {
+        pattern: /vuelta 360/,
+        action: () => {
+          // Igual, endpoint para giro completo.
+          console.log("Comando: vuelta 360");
+        }
+      },
+      {
+        pattern: /retrocede/,
+        action: () => {
+          handleMoveBack();
+        }
+      }
+    ];
+
+  // Elimina artículos de los nombres de los objetos
+  const cleanLabel = (raw: string) => {
+    return raw.toLowerCase().replace(/^(a|el|la|los|las)\s+/, '').trim();
+  };
+
   const fetchDetections = async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -49,7 +104,6 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
-
 
   const handleNavigate = async (id: number, matchingText: string) => {
     try {
@@ -113,25 +167,14 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       setTranscript(transcript);
       console.log("Heard:", transcript);
 
-      // CASO NAVEGACIÓN A OBJETO
-      const navigateMatch = transcript.match(/navega a (.+)/);
-      if (navigateMatch) {
-        const label = navigateMatch[1].toLowerCase();
-        const match = detections.find(d => d.label.toLowerCase() === label);
-        if (match) {
-          handleNavigate(match.id, navigateMatch[1]);
-        } else {
-          setGoalSent("");
-          setFailedMatch(`No se encontró el objeto "${label}"`);
-          console.warn(`No se encontró el objeto "${label}"`);
-        }
+      const matchedCommand = voiceCommands.find(cmd => transcript.match(cmd.pattern));
+      if (matchedCommand) {
+        const match = transcript.match(matchedCommand.pattern);
+        if (match) matchedCommand.action(match);
+      } else {
+        setGoalSent("");
+        setFailedMatch(`No se entendió el comando: "${transcript}"`);
       }
-
-      // CASO RETROCESO
-      const moveBackMatch = transcript.match(/retrocede/);
-      if (moveBackMatch) {
-          handleMoveBack();
-        }
     };
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
