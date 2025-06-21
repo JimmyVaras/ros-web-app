@@ -12,6 +12,15 @@ type Detection = {
   id: number
   label: string
   position: Position
+  room_id: number
+}
+
+type Room = {
+  id: number
+  name: string
+  position_start: Position
+  position_end: Position
+  position_ref: Position
 }
 
 interface VoiceCommandsProps {
@@ -20,6 +29,7 @@ interface VoiceCommandsProps {
 
 export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
   const [detections, setDetections] = useState<Detection[]>([])
+  const [rooms, setRooms] = useState<Room[]>([])
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
   const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognition | null>(null);
@@ -32,7 +42,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       action: (match: RegExpMatchArray) => void
     }[] = [
       {
-        pattern: /navega (?:a|al|a la) (.+)/,
+        pattern: /navega (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
         action: (match) => {
           const label = cleanLabel(match[1]);
           const obj = detections.find(d => d.label.toLowerCase() === label);
@@ -44,7 +54,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
         }
       },
       {
-        pattern: /ve (?:a|al|a la) (.+)/,
+        pattern: /ve (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
         action: (match) => {
           const label = cleanLabel(match[1]);
           const obj = detections.find(d => d.label.toLowerCase() === label);
@@ -52,6 +62,33 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
           else {
             setGoalSent("");
             setFailedMatch(`No se encontró el objeto "${label}"`);
+          }
+        }
+      },
+      {
+        pattern: /(?:ve|navega) (?:a|al|a la) ([^ ]+)(del| de la)? (.+)/,
+        action: (match) => {
+          const label = cleanLabel(match[1]);
+          const roomName = cleanLabel(match[2]);
+
+          // Buscar la habitación por nombre en la lista de rooms
+          const room = rooms.find(r => r.name.toLowerCase() === roomName);
+
+          if (room) {
+            const obj = detections.find(d =>
+              d.label.toLowerCase() === label &&
+              d.room_id === room.id
+            );
+
+            if (obj) {
+              handleNavigate(obj.id, `${match[1]} de ${match[2]}`);
+            } else {
+              setGoalSent("");
+              setFailedMatch(`No se encontró el objeto "${label}" en la habitación "${roomName}"`);
+            }
+          } else {
+            setGoalSent("");
+            setFailedMatch(`No se encontró la habitación "${roomName}"`);
           }
         }
       },
@@ -90,8 +127,31 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     ];
 
   // Elimina artículos de los nombres de los objetos
-  const cleanLabel = (raw: string) => {
+  const cleanLabel = (raw: string = '') => {
     return raw.toLowerCase().replace(/^(a|el|la|los|las)\s+/, '').trim();
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/detections/rooms`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        setError(response.status === 401
+          ? "No tienes permiso para acceder a esta información"
+          : "Fallo al cargar habitaciones")
+      }
+
+      const data = await response.json();
+      setRooms(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
+    }
   };
 
   const fetchDetections = async () => {
@@ -179,6 +239,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
 
   useEffect(() => {
     fetchDetections();
+    fetchRooms();
   }, []);
 
   useEffect(() => {

@@ -7,7 +7,7 @@ from typing import Annotated, List
 
 from auth import get_current_user
 from database import SessionLocal
-from models import Detection, User, Robot, TempDetection
+from models import Detection, User, Robot, TempDetection, Room
 
 
 def get_db():
@@ -133,7 +133,30 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
         duplicate = any(is_close(d.position_obj, new_pos) for d in existing_detections)
 
         if not duplicate_temp and not duplicate:
-            detection = TempDetection(label=marker.name, position_obj=new_pos, position_nav=marker.position_nav.__json__(), robot_id=marker.robot_id, confidence=int(marker.confidence))
+            room_id = 0
+            x, y = new_pos["x"], new_pos["y"]
+            print(f"obj: x{x}, y{y}")
+            # Calculate room of the house
+            rooms = db.query(Room).all()
+            for room in rooms:
+                print(f"room {room.id}")
+                start = room.position_start
+                end = room.position_end
+                print(f"start: {start}; end: {end}")
+
+                if (start["x"] <= x <= end["x"] or end["x"] <= x <= start["x"]) and \
+                (start["y"] <= y <= end["y"] or end["y"] <= y <= start["y"]):
+                    room_id = room.id
+                    break
+
+            detection = TempDetection(
+                label=marker.name,
+                position_obj=new_pos,
+                position_nav=marker.position_nav.__json__(),
+                robot_id=marker.robot_id,
+                confidence=int(marker.confidence),
+                room_id=room_id
+            )
             db.add(detection)
             added_count += 1
 
@@ -171,7 +194,12 @@ def save_markers(temp_detection_id: int, db: Session = Depends(get_db)):
                 detail="Duplicate object found closer than 0.5m"
             )
 
-        detection = Detection(label=db_temp_detection.label, position_obj=new_pos, position_nav=db_temp_detection.position_nav, robot_id=db_temp_detection.robot_id)
+        detection = Detection(
+            label=db_temp_detection.label,
+            position_obj=new_pos,
+            position_nav=db_temp_detection.position_nav,
+            robot_id=db_temp_detection.robot_id,
+            room_id=db_temp_detection.room_id)
         db.add(detection)
         db.delete(db_temp_detection)
         db.commit()
@@ -243,3 +271,11 @@ async def delete_all_temp_detections(db: db_dependency):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting all temporary detections: {str(e)}"
         )
+
+@router.get("/rooms")
+async def get_all_rooms(
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
+    all_rooms = db.query(Room).all()
+    return all_rooms
