@@ -369,6 +369,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
             <li><strong>"Avanza"</strong> - Mover hacia adelante aprox. 1 metro</li>
             <li><strong>"Retrocede"</strong> - Mover hacia atrás aprox. 1 metro</li>
             <li><strong>"Vuelta 360"</strong> - Dar una vuelta completa para mirar alrededor</li>
+            <li><strong>"Mira a la izquierda/derecha/detrás"</strong> - Gira el robot en esa dirección</li>
           </ul>
 
           <h5>Patrulla:</h5>
