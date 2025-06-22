@@ -358,31 +358,31 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
 
           <h5>Navegación:</h5>
           <ul>
-            <li><strong>"Navega a [objeto]"</strong> - Ir a un objeto específico (ej: "Navega a silla")</li>
-            <li><strong>"Ve a [objeto]"</strong> - Alternativa para navegar (ej: "Ve a mesa")</li>
-            <li><strong>"Navega a [objeto] de [habitación]"</strong> - Objetos en habitaciones específicas (ej: "Navega a cuadro de sala")</li>
-            <li><strong>"Ve a [objeto] de [habitación]"</strong> - Alternativa para concretar objetos en habitaciones</li>
+            <li><strong>Navega a [objeto]</strong> - Ir a un objeto específico (ej: Navega a silla)</li>
+            <li><strong>Ve a [objeto]</strong> - Alternativa para navegar (ej: Ve a mesa)</li>
+            <li><strong>Navega a [objeto] de [habitación]</strong> - Objetos en habitaciones específicas (ej: Navega a cuadro de sala)</li>
+            <li><strong>Ve a [objeto] de [habitación]</strong> - Alternativa para concretar objetos en habitaciones</li>
           </ul>
 
           <h5>Movimiento:</h5>
           <ul>
-            <li><strong>"Avanza"</strong> - Mover hacia adelante aprox. 1 metro</li>
-            <li><strong>"Retrocede"</strong> - Mover hacia atrás aprox. 1 metro</li>
-            <li><strong>"Vuelta 360"</strong> - Dar una vuelta completa para mirar alrededor</li>
-            <li><strong>"Mira a la izquierda/derecha/detrás"</strong> - Gira el robot en esa dirección</li>
+            <li><strong>Avanza</strong> - Mover hacia adelante aprox. 1 metro</li>
+            <li><strong>Retrocede</strong> - Mover hacia atrás aprox. 1 metro</li>
+            <li><strong>Vuelta 360</strong> - Dar una vuelta completa para mirar alrededor</li>
+            <li><strong>Mira a la izquierda/derecha/detrás</strong> - Gira el robot en esa dirección</li>
           </ul>
 
           <h5>Patrulla:</h5>
           <ul>
-            <li><strong>"Inicia patrulla"</strong> - Comenzar modo patrulla</li>
-            <li><strong>"Finaliza patrulla"</strong> - Terminar modo patrulla (también acepta "fin patrulla" o "termina patrulla")</li>
+            <li><strong>Inicia patrulla</strong> - Comenzar modo patrulla</li>
+            <li><strong>Finaliza patrulla</strong> - Terminar modo patrulla (también acepta fin patrulla o termina patrulla)</li>
           </ul>
 
           <h5>Otros:</h5>
           <ul>
             {/*TODO: Por implementar*/}
-            <li><strong>"Detener"</strong> - Parar la escucha del micrófono</li>
-            <li><strong>"Ayuda"</strong> - Mostrar esta información</li>
+            <li><strong>Detener</strong> - Parar la escucha del micrófono</li>
+            <li><strong>Ayuda</strong> - Mostrar esta información</li>
           </ul>
         </article>
       </dialog>
