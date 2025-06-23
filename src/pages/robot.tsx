@@ -21,10 +21,6 @@ export default function RobotDetail(): ReactElement {
   const [imageUrl, setImageUrl] = useState<string>("https://placehold.co/600x400.png");
   const [cameraEnabled, setCameraEnabled] = useState(true);
 
-  const handleReload = () => {
-    setReloadKey(Date.now());  // Cambia la clave para forzar reload
-  };
-
   useEffect(() => {
     const token = localStorage.getItem('token');
       if (!token) return;
@@ -144,10 +140,6 @@ export default function RobotDetail(): ReactElement {
                  }}
                />
                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', alignItems: 'center' }}>
-                  {/*<button onClick={handleReload} role="button" className="secondary">*/}
-                  {/*  Reiniciar vídeo ⟳*/}
-                  {/*</button>*/}
-
                   <label className="form-switch">
                     <input
                       type="checkbox"
