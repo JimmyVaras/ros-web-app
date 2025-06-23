@@ -34,6 +34,13 @@ export default function RobotDetail(): ReactElement {
       setImageUrl(url);
     }, [reloadKey]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setReloadKey(Date.now());
+    }, 10000); // 10000 ms = 10 segundos
+
+    return () => clearInterval(interval); // Limpieza al desmontar
+  }, []);
 
   useEffect(() => {
     if (!id || Array.isArray(id)) return;
@@ -137,9 +144,9 @@ export default function RobotDetail(): ReactElement {
                  }}
                />
                <div style={{ marginTop: '1rem', display: 'flex', justifyContent: 'center', gap: '1rem', alignItems: 'center' }}>
-                  <button onClick={handleReload} role="button" className="secondary">
-                    Reiniciar vídeo ⟳
-                  </button>
+                  {/*<button onClick={handleReload} role="button" className="secondary">*/}
+                  {/*  Reiniciar vídeo ⟳*/}
+                  {/*</button>*/}
 
                   <label className="form-switch">
                     <input

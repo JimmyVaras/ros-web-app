@@ -52,7 +52,7 @@ function MapViewer({ interactiveMap = true }: MapViewerProps) {
 
     console.log("Sending goal to:", x, y);
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'} /ros/navigate`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000'}/ros/navigate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

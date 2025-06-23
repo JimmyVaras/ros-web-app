@@ -139,10 +139,8 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
             # Calculate room of the house
             rooms = db.query(Room).all()
             for room in rooms:
-                print(f"room {room.id}")
                 start = room.position_start
                 end = room.position_end
-                print(f"start: {start}; end: {end}")
 
                 if (start["x"] <= x <= end["x"] or end["x"] <= x <= start["x"]) and \
                 (start["y"] <= y <= end["y"] or end["y"] <= y <= start["y"]):

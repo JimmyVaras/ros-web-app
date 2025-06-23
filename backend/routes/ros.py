@@ -41,6 +41,14 @@ def publish_goal(position_dict_obj, position_dict_nav):
         q['w'] = math.cos(yaw / 2.0)
         return q
 
+    # Handle case when position_dict_obj is None
+    if position_dict_obj is None:
+        # Create a point 1 meter north of position_dict_nav
+        position_dict_obj = {
+            'x': position_dict_nav['x']  + 1.0,
+            'y': position_dict_nav['y']
+        }
+
     dx = position_dict_obj['x'] - position_dict_nav['x']
     dy = position_dict_obj['y'] - position_dict_nav['y']
     yaw = math.atan2(dy, dx)
@@ -121,7 +129,7 @@ def navigate_coords(position: Dict[str, float], current_user: User = Depends(get
         )
 
     try:
-        result = publish_goal(position)
+        result = publish_goal(None, position)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Invalid request: {str(e)}")
 

@@ -81,7 +81,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
             );
 
             if (obj) {
-              handleNavigate(obj.id, `${match[1]} de ${match[2]}`);
+              handleNavigate(obj.id, `${match[1]} en ${match[2]}`);
             } else {
               setGoalSent("");
               setFailedMatch(`No se encontró el objeto "${label}" en la habitación "${roomName}"`);
