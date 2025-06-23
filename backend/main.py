@@ -44,7 +44,7 @@ def signup(username: str = Form(), password: str = Form(), db: Session = Depends
 def login(username: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
     user = authenticate_user(db, username, password)
     if not user:
-        return {"error": "Invalid credentials"}
+        return {"error": "Credenciales inválidos"}
 
     token = create_access_token({"sub": user.username})
     return {"access_token": token}

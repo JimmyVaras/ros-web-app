@@ -40,7 +40,7 @@ export default function Home() {
         localStorage.setItem("token", data.access_token);
         router.push("/dashboard");
       } else {
-        setError("Invalid credentials");
+        setError("Credenciales inválidos");
       }
     } catch (err) {
       console.error("Login error:", err);

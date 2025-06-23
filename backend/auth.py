@@ -54,7 +54,7 @@ def get_current_user(
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials",
+        detail="Credenciales inválidos",
     )
     try:
         payload = verify_token(token)
@@ -75,7 +75,7 @@ def get_current_user_from_request(
 ) -> User:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid credentials",
+        detail="Credenciales inválidos",
     )
 
     token = request.query_params.get("auth")

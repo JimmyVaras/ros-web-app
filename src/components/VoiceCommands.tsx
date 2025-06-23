@@ -42,46 +42,36 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
       action: (match: RegExpMatchArray) => void
     }[] = [
       {
-        pattern: /navega (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
+        pattern: /(?:ve|navega) (?:al|a la) ([^ ]+)(del| de la)? (.+)/,
         action: (match) => {
+          console.log("patrón con habitación" + match[1] + "--" + match[3])
           const label = cleanLabel(match[1]);
-          const obj = detections.find(d => d.label.toLowerCase() === label);
-          if (obj) handleNavigate(obj.id, match[1]);
-          else {
-            setGoalSent("");
-            setFailedMatch(`No se encontró el objeto "${label}"`);
-          }
-        }
-      },
-      {
-        pattern: /ve (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
-        action: (match) => {
-          const label = cleanLabel(match[1]);
-          const obj = detections.find(d => d.label.toLowerCase() === label);
-          if (obj) handleNavigate(obj.id, match[1]);
-          else {
-            setGoalSent("");
-            setFailedMatch(`No se encontró el objeto "${label}"`);
-          }
-        }
-      },
-      {
-        pattern: /(?:ve|navega) (?:a|al|a la) ([^ ]+)(del| de la)? (.+)/,
-        action: (match) => {
-          const label = cleanLabel(match[1]);
-          const roomName = cleanLabel(match[2]);
+          const roomName = cleanLabel(match[3]);
+          console.log("label: ", label)
+          console.log("roomname: ", roomName)
+
 
           // Buscar la habitación por nombre en la lista de rooms
           const room = rooms.find(r => r.name.toLowerCase() === roomName);
+          console.log("room encontrado:", room);
 
           if (room) {
             const obj = detections.find(d =>
               d.label.toLowerCase() === label &&
               d.room_id === room.id
             );
+            console.log("detections:", detections);
+            console.log("obj:", obj);
 
-            if (obj) {
-              handleNavigate(obj.id, `${match[1]} en ${match[2]}`);
+            if (obj == undefined) {
+              setGoalSent("");
+              setFailedMatch(`No se encontró el objeto "${label}" en la habitación "${roomName}"`);
+              return
+            }
+
+            if (obj != undefined) {
+              console.log("navegando")
+              handleNavigate(obj.id, `${label} en ${roomName}`);
             } else {
               setGoalSent("");
               setFailedMatch(`No se encontró el objeto "${label}" en la habitación "${roomName}"`);
@@ -89,6 +79,32 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
           } else {
             setGoalSent("");
             setFailedMatch(`No se encontró la habitación "${roomName}"`);
+          }
+        }
+      },
+      {
+        pattern: /navega (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
+        action: (match) => {
+          console.log("patrón sin habitación")
+          const label = cleanLabel(match[1]);
+          const obj = detections.find(d => d.label.toLowerCase() === label);
+          if (obj) handleNavigate(obj.id, match[1]);
+          else {
+            setGoalSent("");
+            setFailedMatch(`No se encontró el objeto "${label}"`);
+          }
+        }
+      },
+      {
+        pattern: /ve (?:al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
+        action: (match) => {
+          console.log("patrón sin habitación")
+          const label = cleanLabel(match[1]);
+          const obj = detections.find(d => d.label.toLowerCase() === label);
+          if (obj) handleNavigate(obj.id, match[1]);
+          else {
+            setGoalSent("");
+            setFailedMatch(`No se encontró el objeto "${label}"`);
           }
         }
       },
@@ -128,7 +144,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
 
   // Elimina artículos de los nombres de los objetos
   const cleanLabel = (raw: string = '') => {
-    return raw.toLowerCase().replace(/^(a|el|la|los|las)\s+/, '').trim();
+    return raw.toLowerCase().replace(/^(a|el|la|los|las|del|de la)\s+/, '').trim();
   };
 
   const fetchRooms = async () => {
@@ -178,6 +194,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
   };
 
   const handleNavigate = async (id: number, matchingText: string) => {
+    console.log("navego porque quierooo")
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
       const response = await fetch(`${apiUrl}/ros/${id}/navigate`, {
@@ -252,7 +269,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
 
     const recognition = new SpeechRecognition();
     recognition.continuous = true;
-    recognition.interimResults = true;
+    recognition.interimResults = false; // TODO: para evitar comandos partidos
     recognition.lang = 'es-ES';
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {

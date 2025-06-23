@@ -138,6 +138,7 @@ def subscribe_to_detections_image():
     image_topic.subscribe(callback)
 
 threading.Thread(target=subscribe_to_detections_image, daemon=True).start()
+stream_detections_enabled = True
 
 @app.get("/detections/stream")
 async def stream_detections():

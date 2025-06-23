@@ -39,7 +39,7 @@ export default function Dashboard() {
         }
 
         if (!res.ok) {
-          throw new Error("Failed to fetch robots");
+          setError("Failed to fetch robots");
         }
 
         const data = await res.json();
