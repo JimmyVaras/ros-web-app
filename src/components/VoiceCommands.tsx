@@ -144,7 +144,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
 
   // Elimina artículos de los nombres de los objetos
   const cleanLabel = (raw: string = '') => {
-    return raw.toLowerCase().replace(/^(a|el|la|los|las|del|de la)\s+/, '').trim();
+    return raw.toLowerCase().replace(/^(a|el|la|los|las|del|de la|.)\s+/, '').trim();
   };
 
   const fetchRooms = async () => {
