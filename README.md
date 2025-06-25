@@ -4,10 +4,6 @@
 
 **Dirigido por**: Fernando Díaz del Río
 
-**Versión ROS usada**: Noetic Ninjemys
-
-**Modelo TurtleBot3** usado: TB3 Waffle Pi con cámara de profundidad añadida (en [/jimmy_simulations_pkg/docs/](https://github.com/JimmyVaras/jimmy_turtlebot3_pkg/blob/master/jimmy_simulations_pkg/docs/turtlebot3_waffle_pi.gazebo.xacro))
-
 ## Descripción:
 
 Este paquete contiene el código desarrollado (del sistema ROS) para mi Trabajo de Fin de Grado, de Ingeniería de Software en la Universidad de Sevilla, en 2025. En este proyecto, se desarrolló un aplicación web de control y supervisión remota para el robot con el sistema desarrollado en https://github.com/JimmyVaras/ros-web-app. Permite al usuario interactuar con el robot mediante comandos de voz o botones, visualizar el mapa del entorno, ver las detecciones en tiempo real y enviar objetivos de navegación. 
