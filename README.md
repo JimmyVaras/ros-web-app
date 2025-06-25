@@ -1,36 +1,27 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Reconocimiento de objetos simulados en el entorno Gazebo/ROS
 
-## Getting Started
+**Realizado por**: Jaime Varas Cáceres
 
-First, run the development server:
+**Dirigido por**: Fernando Díaz del Río
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+**Versión ROS usada**: Noetic Ninjemys
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**Modelo TurtleBot3** usado: TB3 Waffle Pi con cámara de profundidad añadida (en [/jimmy_simulations_pkg/docs/](https://github.com/JimmyVaras/jimmy_turtlebot3_pkg/blob/master/jimmy_simulations_pkg/docs/turtlebot3_waffle_pi.gazebo.xacro))
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Descripción:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Este paquete contiene el código desarrollado (del sistema ROS) para mi Trabajo de Fin de Grado, de Ingeniería de Software en la Universidad de Sevilla, en 2025. En este proyecto, se desarrolló un aplicación web de control y supervisión remota para el robot con el sistema desarrollado en https://github.com/JimmyVaras/ros-web-app. Permite al usuario interactuar con el robot mediante comandos de voz o botones, visualizar el mapa del entorno, ver las detecciones en tiempo real y enviar objetivos de navegación. 
 
-## Learn More
+- **Frontend**: Next.js, TypeScript, PicoCSS.
+- **Backend**: FastAPI con comunicación hacia ROS mediante rosbridge y consumo de datos de sensores y detecciones.
+- **Características destacadas**:
+  - Autenticación de usuarios.
+  - Control del robot por comandos de voz.
+  - Visualización del mapa y cámara del robot.
+  - Sistema de memoria de detecciones y navegación hacia objetos.
 
-To learn more about Next.js, take a look at the following resources:
+## 3 Componentes:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Frontend**: Directorio base del repositorio
+- **Backend Web App**: (en /backend) Endpoints para la comunicación entre el frontend, la base de datos el sistema ROS a través del túnel protegido.
+- **Backend APINexo**: (en /APINexo) Endpoints para la comunicación con el sistema ROS a través de una API convencional. Sus endpoints son una forma sencilla de interactuar con topics de ROS en forma de peticiones HTTP tradicionales.
