@@ -1,9 +1,15 @@
+# --------------------
+# En este archivo se definen los endpoints
+# que gestionan los objetos detectados guardados.
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 import math
 
 from fastapi import APIRouter, HTTPException, status, Depends, Query
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import List
 
 from auth import get_current_user
 from database import SessionLocal
@@ -18,9 +24,8 @@ def get_db():
         db.close()
 
 
-db_dependency = Annotated[Session, Depends(get_db)]
-
 router = APIRouter(prefix="/detections", tags=["detections"])
+
 
 class MarkerPosition(BaseModel):
     x: float
@@ -49,6 +54,7 @@ def is_close(p1, p2, threshold=1):
     dy = p1["y"] - p2["y"]
     return math.sqrt(dx ** 2 + dy ** 2) < threshold
 
+
 @router.get("")
 async def get_detections_for_robot(
         robot_id: int = Query(..., description="ID of the robot"),
@@ -66,6 +72,7 @@ async def get_detections_for_robot(
     # Obtener detecciones relacionadas con el robot
     detections = db.query(Detection).filter(Detection.robot_id == robot_id).all()
     return detections
+
 
 @router.get("/temp")
 async def get_detections_for_robot(
@@ -112,6 +119,7 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
     db.commit()
     return {"status": "created", "added": added_count}
 
+
 # POST endpoint to save a temporal detection
 @router.post("/temp")
 def save_markers(data: MarkerList, db: Session = Depends(get_db)):
@@ -143,7 +151,7 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
                 end = room.position_end
 
                 if (start["x"] <= x <= end["x"] or end["x"] <= x <= start["x"]) and \
-                (start["y"] <= y <= end["y"] or end["y"] <= y <= start["y"]):
+                        (start["y"] <= y <= end["y"] or end["y"] <= y <= start["y"]):
                     room_id = room.id
                     break
 
@@ -160,6 +168,7 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
 
     db.commit()
     return {"status": "created", "added": added_count}
+
 
 # POST endpoint to persisit temporal detections
 @router.post("/save/{temp_detection_id}")
@@ -216,7 +225,7 @@ def save_markers(temp_detection_id: int, db: Session = Depends(get_db)):
 
 
 @router.delete("/{detection_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_detection(detection_id: int, db: db_dependency):
+async def delete_detection(detection_id: int, db: Session = Depends(get_db)):
     db_detection = db.query(Detection).filter(Detection.id == detection_id).first()
 
     if not db_detection:
@@ -236,8 +245,9 @@ async def delete_detection(detection_id: int, db: db_dependency):
             detail=f"Error deleting detection: {str(e)}"
         )
 
+
 @router.delete("/temp/{temp_detection_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_temp_detection(temp_detection_id: int, db: db_dependency):
+async def delete_temp_detection(temp_detection_id: int, db: Session = Depends(get_db)):
     db_temp_detection = db.query(TempDetection).filter(TempDetection.id == temp_detection_id).first()
 
     if not db_temp_detection:
@@ -256,8 +266,9 @@ async def delete_temp_detection(temp_detection_id: int, db: db_dependency):
             detail=f"Error deleting temporary detection: {str(e)}"
         )
 
+
 @router.delete("/temp/remove/all", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_all_temp_detections(db: db_dependency):
+async def delete_all_temp_detections(db: Session = Depends(get_db)):
     try:
         # Delete all records from TempDetection table
         db.query(TempDetection).delete()
@@ -269,6 +280,7 @@ async def delete_all_temp_detections(db: db_dependency):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error deleting all temporary detections: {str(e)}"
         )
+
 
 @router.get("/rooms")
 async def get_all_rooms(

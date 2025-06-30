@@ -1,3 +1,8 @@
+// --------------------
+// Componente del listado de detecciones temporales.
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 import {useEffect, useState} from 'react';
 import '@picocss/pico/css/pico.min.css';
 import Link from "next/link";

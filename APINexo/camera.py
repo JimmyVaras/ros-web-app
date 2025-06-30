@@ -1,3 +1,9 @@
+# --------------------
+# Este archivo Python contiene los endpoints para la retrasmisión
+# de la cámara de TurtleBot3 desde API Nexo
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 import base64
 import threading
 import cv2
@@ -9,16 +15,17 @@ from fastapi import APIRouter, HTTPException, status, Depends, Query
 from fastapi.responses import StreamingResponse
 
 
-# ROS connection
+# Conexión a ROS
 ros = roslibpy.Ros(host='localhost', port=9090)
 ros.run()
 
 router = APIRouter(prefix="/camera", tags=["camera"])
 
-# To activate/deactivate que encoding of the Stream and reduce load
+# Para activar/desactivar la retrasmisión y reducir la carga
 stream_detections_enabled = True
 stream_camera_enabled = True
 
+# Guardado de la última imagen recibida de la cámara
 latest_image = None
 lock = threading.Lock()
 
@@ -27,7 +34,7 @@ def subscribe_to_camera():
     def callback(message):
         global latest_image
         try:
-            # Decodificar la imagen base64 si estás usando rosbridge con sensor_msgs/CompressedImage
+            # Decodificar la imagen base64 para sensor_msgs/CompressedImage
             img_data = base64.b64decode(message['data'])
             np_arr = np.frombuffer(img_data, np.uint8)
             frame = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
@@ -68,7 +75,6 @@ def mjpeg_generator():
 @router.get("/stream")
 async def stream_camera():
     return StreamingResponse(mjpeg_generator(), media_type='multipart/x-mixed-replace; boundary=frame')
-
 
 @router.post("/stream/enable")
 async def enable_detections_stream():

@@ -1,11 +1,16 @@
+# --------------------
+# Este es el archivo principal del backend
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 from fastapi import FastAPI, APIRouter, Depends, Form
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from models import User
+from auth import create_access_token, authenticate_user, hash_password, get_db
 from database import engine, Base
+from models import User
 from routes import detections, ros, robots
-from auth import create_access_token, verify_token, authenticate_user, hash_password, get_db
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -25,20 +30,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
-    return {"message": "This is the root endpoint of the app, Jimmy"}
+    return {"message": "Este es el endpoint base del backend"}
+
 
 @app.post("/signup")
 def signup(username: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
     existing_user = db.query(User).filter(User.username == username).first()
     if existing_user:
-        return {"error": "User already exists"}
+        return {"error": "Ya existe un usuario con ese nombre"}
 
     new_user = User(username=username, hashed_password=hash_password(password))
     db.add(new_user)
     db.commit()
-    return {"message": "User created"}
+    return {"message": "Usuario creado"}
+
 
 @app.post("/login")
 def login(username: str = Form(), password: str = Form(), db: Session = Depends(get_db)):
@@ -48,6 +56,7 @@ def login(username: str = Form(), password: str = Form(), db: Session = Depends(
 
     token = create_access_token({"sub": user.username})
     return {"access_token": token}
+
 
 api_router = APIRouter()
 api_router.include_router(detections.router)

@@ -1,5 +1,10 @@
 'use client';
 
+// --------------------
+// Componente del mapa en tiempo real.
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 import { useState, useEffect, useRef } from 'react';
 import {toast, ToastContainer} from 'react-toastify';
 

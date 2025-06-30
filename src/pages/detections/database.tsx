@@ -1,3 +1,8 @@
+// --------------------
+// Página mostrada en /detections/database
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 import {useEffect, useState} from 'react';
 import '@picocss/pico/css/pico.min.css';
 import {useRouter} from "next/router";
@@ -85,7 +90,6 @@ export default function DetectionsPage() {
       setError(err instanceof Error ? err.message : 'Failed to navigate');
     }
   };
-
 
   useEffect(() => {
     fetchDetections();

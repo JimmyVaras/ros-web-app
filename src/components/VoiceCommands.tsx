@@ -2,6 +2,11 @@ import {useEffect, useState} from 'react';
 import '@picocss/pico/css/pico.min.css';
 import Link from "next/link";
 
+// --------------------
+// Componente del intérprete de comandos de voz.
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 type Position = {
   x: number
   y: number

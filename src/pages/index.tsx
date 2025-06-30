@@ -1,3 +1,8 @@
+// --------------------
+// Página mostrada en la URL base de la app web
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 import '@picocss/pico/css/pico.min.css';
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";

@@ -1,18 +1,24 @@
+# --------------------
+# En este archivo se definen los endpoints que
+# gestionan los robots de los usuarios.
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
 
-from auth import get_current_user, get_db  # Your auth dependency
+from auth import get_current_user, get_db
 from models import Robot, User
 
 router = APIRouter(prefix="/robots", tags=["robots"])
 
+
 @router.get("", response_model=list[dict])
 async def get_user_robots(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)  # Ensures the user is authenticated
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)  # Ensures the user is authenticated
 ):
-
     robots = db.query(Robot).filter(Robot.owner_id == current_user.id).all()
 
     if not robots:
@@ -27,6 +33,7 @@ async def get_user_robots(
         }
         for robot in robots
     ]
+
 
 @router.get("/{robot_id}", response_model=dict)
 async def get_robot_by_id(

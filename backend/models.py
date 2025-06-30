@@ -1,3 +1,9 @@
+# --------------------
+# En este archivo se definen las clases y las tablas
+# de la BD del backend.
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 from sqlalchemy import Column, Integer, String, JSON, ForeignKey
 from sqlalchemy.orm import relationship
 
@@ -16,6 +22,7 @@ class Detection(Base):
     room_id = Column(Integer, ForeignKey("rooms.id"))
     room = relationship("Room")
 
+
 class TempDetection(Base):
     __tablename__ = 'temp_detections'
 
@@ -29,6 +36,7 @@ class TempDetection(Base):
     room_id = Column(Integer, ForeignKey("rooms.id"))
     room = relationship("Room")
 
+
 class User(Base):
     __tablename__ = 'users'
 
@@ -36,6 +44,7 @@ class User(Base):
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
     robots = relationship("Robot", back_populates="owner")
+
 
 class Robot(Base):
     __tablename__ = 'robots'
@@ -48,6 +57,7 @@ class Robot(Base):
     detections = relationship("Detection", back_populates="robot")
     temp_detections = relationship("TempDetection", back_populates="robot")
 
+
 class Room(Base):
     __tablename__ = 'rooms'
     id = Column(Integer, primary_key=True, index=True)
@@ -55,5 +65,4 @@ class Room(Base):
     position_start = Column(JSON)
     position_end = Column(JSON)
     position_ref = Column(JSON)
-    #TODO: Add association to user/robot
-
+    # TODO: Add association to user/robot

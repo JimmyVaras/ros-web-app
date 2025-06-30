@@ -1,3 +1,9 @@
+# --------------------
+# En este archivo se definen los endpoints que
+# gestionan la entre la app web y el sistema ROS.
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 import time
 import math
 from typing import Annotated, Dict
@@ -27,6 +33,7 @@ def get_db():
     finally:
         db.close()
 
+
 db_dependency = Annotated[Session, Depends(get_db)]
 
 router = APIRouter(prefix="/ros", tags=["ros"])
@@ -45,7 +52,7 @@ def publish_goal(position_dict_obj, position_dict_nav):
     if position_dict_obj is None:
         # Create a point 1 meter north of position_dict_nav
         position_dict_obj = {
-            'x': position_dict_nav['x']  + 1.0,
+            'x': position_dict_nav['x'] + 1.0,
             'y': position_dict_nav['y']
         }
 
@@ -95,7 +102,6 @@ def publish_goal(position_dict_obj, position_dict_nav):
         return False
 
 
-
 # POST endpoint to navigate to the detection
 @router.post("/{detection_id}/navigate")
 async def navigate_detection(detection_id: int, db: db_dependency, current_user: User = Depends(get_current_user)):
@@ -120,6 +126,7 @@ async def navigate_detection(detection_id: int, db: db_dependency, current_user:
 
     return {"message": "Navigation goal published", "position": str(db_detection.position_nav), "status": str(result)}
 
+
 @router.post("/navigate")
 def navigate_coords(position: Dict[str, float], current_user: User = Depends(get_current_user)):
     if current_user is None:
@@ -135,6 +142,7 @@ def navigate_coords(position: Dict[str, float], current_user: User = Depends(get
 
     return {"message": "Navigation goal published", "position": position, "status": result}
 
+
 # TODO: Date-time watermarks in images
 @router.get("/proxy-camera")
 def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
@@ -144,13 +152,14 @@ def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
             detail="You don't have permission to do that"
         )
 
-    headers={
+    headers = {
         'X-Tunnel-Authorization': 'tunnel ' + token
     }
 
     r = requests.get(f"{tunnel_url}/camera/stream", headers=headers, stream=True)
 
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
+
 
 @router.get("/proxy-map")
 def proxy_map(current_user: User = Depends(get_current_user_from_request)):
@@ -160,13 +169,14 @@ def proxy_map(current_user: User = Depends(get_current_user_from_request)):
             detail="You don't have permission to do that"
         )
 
-    headers={
+    headers = {
         'X-Tunnel-Authorization': 'tunnel ' + token
     }
 
     r = requests.get(f"{tunnel_url}/map/snapshot", headers=headers, stream=True)
 
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
+
 
 @router.get("/proxy-detections")
 def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
@@ -176,13 +186,14 @@ def proxy_camera(current_user: User = Depends(get_current_user_from_request)):
             detail="You don't have permission to do that"
         )
 
-    headers={
+    headers = {
         'X-Tunnel-Authorization': 'tunnel ' + token
     }
 
     r = requests.get(f"{tunnel_url}/detections/stream", headers=headers, stream=True)
 
     return StreamingResponse(r.raw, media_type=r.headers.get("content-type", "image/jpeg"))
+
 
 @router.post("/move-back")
 def move_backwards():
@@ -201,6 +212,7 @@ def move_backwards():
         print(f"Failed to move back: {e}")
         return False
 
+
 @router.post("/camera/stream/disable")
 def disable_stream_camera():
     try:
@@ -217,6 +229,7 @@ def disable_stream_camera():
     except requests.RequestException as e:
         print(f"Failed to disable camera stream: {e}")
         return False
+
 
 @router.post("/camera/stream/enable")
 def enable_stream_camera():
@@ -235,6 +248,7 @@ def enable_stream_camera():
         print(f"Failed to enable camera stream: {e}")
         return False
 
+
 @router.post("/patrol/start")
 def start_patrol():
     try:
@@ -251,6 +265,7 @@ def start_patrol():
     except requests.RequestException as e:
         print(f"Failed to start patrol: {e}")
         return False
+
 
 @router.post("/patrol/stop")
 def stop_patrol():

@@ -1,6 +1,13 @@
+# --------------------
+# Este archivo Python contiene funciones auxiliares para el
+# control de TurtleBot3 desde peticiones recibidas por la API Nexo
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 import rospy
 from geometry_msgs.msg import Twist
 import time
+
 
 def move_backwards(distance=1.0, speed=0.2):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)

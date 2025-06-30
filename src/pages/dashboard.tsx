@@ -1,3 +1,8 @@
+// --------------------
+// Página mostrada en /dashboard
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 import '@picocss/pico/css/pico.min.css';
 import {useEffect, useState} from "react";
 import { useRouter } from "next/router";

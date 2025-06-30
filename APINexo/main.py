@@ -1,3 +1,8 @@
+# --------------------
+# Este archivo principal de la API Nexo
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 from fastapi import FastAPI, Request, Header, HTTPException, status, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -35,7 +40,7 @@ app.add_middleware(
 ros = roslibpy.Ros(host='localhost', port=9090)
 ros.run()
 
-
+# Enpoint base
 @app.get("/")
 async def root():
     return {"connected": ros.is_connected}

@@ -1,3 +1,8 @@
+// --------------------
+// Página mostrada en /detections
+// Autor: Jaime Varas Cáceres
+// --------------------
+
 import '@picocss/pico/css/pico.min.css';
 import { useRouter } from 'next/router';
 import { ReactElement, useState, useEffect } from 'react';

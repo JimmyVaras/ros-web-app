@@ -1,10 +1,16 @@
+# --------------------
+# Este archivo Python gestiona la conexión a la base de datos
+# del backend
+# Autor: Jaime Varas Cáceres
+# --------------------
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # Looks for .env in current directory by default
+load_dotenv()  # Busca un .env en el directorio actual
 
 # Get DATABASE_URL from environment variables
 DATABASE_URL = os.environ.get('DATABASE_URL')
