@@ -9,14 +9,16 @@ from geometry_msgs.msg import Twist
 import time
 
 
-def move_backwards(distance=1.0, speed=0.2):
+def move(distance=1.0, speed=0.2, reverse=False):
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
     rospy.init_node('backward_mover', anonymous=True)
 
     move_cmd = Twist()
-    move_cmd.linear.x = -abs(speed)  # Velocidad negativa → hacia atrás
 
-    duration = distance / speed
+    reverseFact = -1 if reverse else 1
+    move_cmd.linear.x = reverseFact * abs(speed)  # Velocidad negativa → hacia atrás
+
+    duration = distance / abs(speed)
 
     rate = rospy.Rate(10)  # 10 Hz
     start_time = rospy.Time.now().to_sec()
@@ -28,4 +30,3 @@ def move_backwards(distance=1.0, speed=0.2):
     # Parar el robot
     move_cmd.linear.x = 0
     pub.publish(move_cmd)
-    

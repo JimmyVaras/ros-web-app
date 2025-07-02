@@ -19,7 +19,7 @@ import time
 import subprocess
 
 import camera
-from aux import move_backwards
+from aux import move
 
 app = FastAPI()
 
@@ -40,6 +40,7 @@ app.add_middleware(
 ros = roslibpy.Ros(host='localhost', port=9090)
 ros.run()
 
+
 # Enpoint base
 @app.get("/")
 async def root():
@@ -51,7 +52,9 @@ class PublishRequest(BaseModel):
     type: str
     message: dict
 
+
 lock = threading.Lock()
+
 
 @app.post("/publish")
 async def publish_message(data: PublishRequest):
@@ -69,6 +72,7 @@ async def publish_message(data: PublishRequest):
 latest_map = None
 latest_pose = None
 
+
 def subscribe_topics():
     def map_callback(msg):
         global latest_map
@@ -81,7 +85,9 @@ def subscribe_topics():
     roslibpy.Topic(ros, '/map', 'nav_msgs/OccupancyGrid').subscribe(map_callback)
     roslibpy.Topic(ros, '/amcl_pose', 'geometry_msgs/PoseWithCovarianceStamped').subscribe(pose_callback)
 
+
 threading.Thread(target=subscribe_topics, daemon=True).start()
+
 
 @app.get("/map/snapshot")
 async def map_snapshot():
@@ -124,7 +130,9 @@ async def map_snapshot():
     buffer.seek(0)
     return StreamingResponse(buffer, media_type="image/jpeg")
 
+
 latest_detections_image = None
+
 
 def subscribe_to_detections_image():
     def callback(message):
@@ -142,8 +150,10 @@ def subscribe_to_detections_image():
     image_topic = roslibpy.Topic(ros, '/yolo_detections/image/compressed', 'sensor_msgs/CompressedImage')
     image_topic.subscribe(callback)
 
+
 threading.Thread(target=subscribe_to_detections_image, daemon=True).start()
 stream_detections_enabled = True
+
 
 @app.get("/detections/stream")
 async def stream_detections():
@@ -151,7 +161,7 @@ async def stream_detections():
         while True:
             if not stream_detections_enabled:
                 time.sleep(0.5)
-                continue # skips the stream encoding
+                continue  # skips the stream encoding
 
             with lock:
                 if latest_detections_image is not None:
@@ -162,12 +172,13 @@ async def stream_detections():
 
             if frame:
                 yield (
-                    b'--frame\r\n'
-                    b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
+                        b'--frame\r\n'
+                        b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n'
                 )
             time.sleep(0.1)
 
     return StreamingResponse(generator(), media_type='multipart/x-mixed-replace; boundary=frame')
+
 
 # TODO implementar llamadas en frontend
 @app.post("/detections/stream/enable")
@@ -176,18 +187,28 @@ async def enable_detections_stream():
     stream_detections_enabled = True
     return {"status": "enabled"}
 
+
 @app.post("/detections/stream/disable")
 async def disable_detections_stream():
     global stream_detections_enabled
     stream_detections_enabled = False
     return {"status": "disabled"}
 
+
 @app.post("/move-back")
 async def move_back():
-    move_backwards()
+    move(reverse=True)
     return {"status": "published"}
 
+
+@app.post("/move-forward")
+async def move_forward():
+    move()
+    return {"status": "published"}
+
+
 patrol_process = None
+
 
 @app.post("/start_patrol")
 def start_patrol():
@@ -205,17 +226,58 @@ def start_patrol():
     patrol_process = subprocess.Popen(command)
     return {"status": "patrol started"}
 
-# TODO: no se elimina el último destino... Mandar a inicio al apagar el patrol?
+
 @app.post("/stop_patrol")
 def stop_patrol():
     global patrol_process
     if patrol_process is None or patrol_process.poll() is not None:
-        return {"status": "patrol not running"}
+        return {"success": False, "message": "Patrol is not running"}
 
-    patrol_process.terminate()  # envía SIGTERM
+    # Terminar el proceso de patrullaje
+    patrol_process.terminate()
     patrol_process.wait(timeout=5)
     patrol_process = None
-    return {"status": "patrol stopped"}
+
+    # Comprobar conexión ROS
+    if not ros.is_connected:
+        return {"success": False, "error": "ROS is not connected"}
+
+    try:
+        # Crear el mensaje de goal
+        message = {
+            "header": {
+                "seq": 0,
+                "stamp": {"secs": 0, "nsecs": 0},  # el servidor lo ignora
+                "frame_id": "map"
+            },
+            "goal_id": {
+                "stamp": {"secs": 0, "nsecs": 0},
+                "id": "goal_from_backend"
+            },
+            "goal": {
+                "target_pose": {
+                    "header": {
+                        "seq": 0,
+                        "stamp": {"secs": 0, "nsecs": 0},
+                        "frame_id": "map"
+                    },
+                    "pose": {
+                        "position": {"x": 0.0, "y": 0.0, "z": 0.0},
+                        "orientation": {"x": 0.0, "y": 0.0, "z": 0.0, "w": 1.0}
+                    }
+                }
+            }
+        }
+
+        topic = roslibpy.Topic(ros, '/move_base/goal', 'move_base_msgs/MoveBaseActionGoal')
+        topic.publish(roslibpy.Message(message))
+        topic.unadvertise()
+
+        return {"success": True, "message": "Patrol stopped and goal to (0,0) sent"}
+
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 api_router = APIRouter()
 api_router.include_router(camera.router)

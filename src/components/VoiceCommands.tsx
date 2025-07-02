@@ -88,7 +88,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
         }
       },
       {
-        pattern: /navega (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
+        pattern: /(?:navega|ve) (?:a|al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
         action: (match) => {
           console.log("patrón sin habitación")
           const label = cleanLabel(match[1]);
@@ -99,25 +99,10 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
             setFailedMatch(`No se encontró el objeto "${label}"`);
           }
         }
-      },
-      {
-        pattern: /ve (?:al|a la) (?!.*\bde\b|\bdel\b)(.+)/,
-        action: (match) => {
-          console.log("patrón sin habitación")
-          const label = cleanLabel(match[1]);
-          const obj = detections.find(d => d.label.toLowerCase() === label);
-          if (obj) handleNavigate(obj.id, match[1]);
-          else {
-            setGoalSent("");
-            setFailedMatch(`No se encontró el objeto "${label}"`);
-          }
-        }
-      },
-      {
+      },{
         pattern: /avanza/,
         action: () => {
-          // TODO
-          console.log("Comando: avanzar");
+          handleMoveForward();
         }
       },
       {
@@ -134,13 +119,13 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
         }
       },
       {
-        pattern: /inicia patrulla/,
+        pattern: /(inicia|iniciar|inicio) patrulla/,
         action: () => {
           patrol(true);
         }
       },
       {
-        pattern: /(fin|finaliza|termina) patrulla/,
+        pattern: /(fin|finaliza|finalizar|termina|terminar|para|parar) patrulla/,
         action: () => {
           patrol(false);
         }
@@ -239,6 +224,26 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     }
   };
 
+  const handleMoveForward = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/ros/move-forward`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }, method: 'POST',
+      });
+      if (!response.ok) {
+        setError('Fallo al avanzar');
+      } else if (response.ok) {
+        setFailedMatch("")
+        setGoalSent("Avanzando")
+      }
+      await fetchDetections();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Fallo al avanzar');
+    }
+  };
+
   const patrol = async (isStart: boolean) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -310,6 +315,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     } else {
       recognitionInstance.stop();
       setTranscript("")
+      setGoalSent("")
       setFailedMatch("")
       console.log("Voice recognition stopped");
     }
@@ -397,14 +403,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
           <h5>Patrulla:</h5>
           <ul>
             <li><strong>Inicia patrulla</strong> - Comenzar modo patrulla</li>
-            <li><strong>Finaliza patrulla</strong> - Terminar modo patrulla (también acepta fin patrulla o termina patrulla)</li>
-          </ul>
-
-          <h5>Otros:</h5>
-          <ul>
-            {/*TODO: Por implementar*/}
-            <li><strong>Detener</strong> - Parar la escucha del micrófono</li>
-            <li><strong>Ayuda</strong> - Mostrar esta información</li>
+            <li><strong>Finaliza patrulla</strong> - Terminar modo patrulla (también acepta fin/finaliza/parar/terminar patrulla)</li>
           </ul>
         </article>
       </dialog>

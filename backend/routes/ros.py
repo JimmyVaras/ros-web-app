@@ -213,6 +213,24 @@ def move_backwards():
         return False
 
 
+@router.post("/move-forward")
+def move_forward():
+    try:
+        response = requests.post(
+            tunnel_url + "/move-forward",
+            headers={
+                'X-Tunnel-Authorization': 'tunnel ' + token
+            },
+            timeout=5
+        )
+        response.raise_for_status()
+        print("Message successfully published via API.")
+        return True
+    except requests.RequestException as e:
+        print(f"Failed to move forward: {e}")
+        return False
+
+
 @router.post("/camera/stream/disable")
 def disable_stream_camera():
     try:
