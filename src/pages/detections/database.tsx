@@ -20,12 +20,22 @@ type Detection = {
   label: string
   position_obj: Position
   position_nav: Position
+  room_id: number
+}
+
+type Room = {
+  id: number
+  name: string
+  position_start: Position
+  position_end: Position
+  position_ref: Position
 }
 
 export default function DetectionsPage() {
   const router = useRouter();
   const { robot_id } = router.query;
   const [detections, setDetections] = useState<Detection[]>([])
+  const [rooms, setRooms] = useState<Room[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -54,6 +64,29 @@ export default function DetectionsPage() {
       setError(err instanceof Error ? err.message : 'Unknown error');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchRooms = async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/detections/rooms`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        setError(response.status === 401
+          ? "No tienes permiso para acceder a esta información"
+          : "Fallo al cargar habitaciones")
+      }
+
+      const data = await response.json();
+      setRooms(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error');
     }
   };
 
@@ -93,6 +126,7 @@ export default function DetectionsPage() {
 
   useEffect(() => {
     fetchDetections();
+    fetchRooms();
   }, []);
 
   useEffect(() => {
@@ -171,13 +205,6 @@ export default function DetectionsPage() {
         <header style={{marginBottom: '2rem'}}>
           <h1>Detección de objetos</h1>
           <p>Lista de todos los objetos detectados</p>
-          <button
-            onClick={() => setIsListening(!isListening)}
-            className={isListening ? 'contrast' : 'outline'}
-            style={{backgroundColor: isListening ? 'red' : '', color: isListening ? 'white' : ''}}
-          >
-            {isListening ? '🎙️ Parar' : '🎙️ Iniciar'}
-          </button>
         </header>
 
         <div className="grid">
@@ -189,6 +216,7 @@ export default function DetectionsPage() {
                   <th scope="col">Id</th>
                   <th scope="col">Nombre</th>
                   <th scope="col">Posición</th>
+                  <th scope="col">Habitación</th>
                   <th scope="col">Acciones</th>
                 </tr>
                 </thead>
@@ -197,7 +225,16 @@ export default function DetectionsPage() {
                   <tr key={detection.id}>
                     <td><code>{detection.id}</code></td>
                     <td><strong>{detection.label}</strong></td>
-                    <td>x: {detection.position_obj["x"]}, y: {detection.position_obj["y"]}</td>
+                    <td>
+                      x: {Number(detection.position_obj["x"]).toFixed(2)}, y: {Number(detection.position_obj["y"]).toFixed(2)}
+                    </td>
+                    <td>
+                      <strong>
+                        {
+                          rooms.find(room => room.id === detection.room_id)?.name || `Sala ${detection.room_id}`
+                        }
+                      </strong>
+                    </td>
                     <td>
                       <div className="grid" style={{gridTemplateColumns: 'repeat(2, 1fr)'}}>
                         <button

@@ -19,7 +19,7 @@ import time
 import subprocess
 
 import camera
-from aux import move
+from aux import move, turn
 
 app = FastAPI()
 
@@ -204,6 +204,24 @@ async def move_back():
 @app.post("/move-forward")
 async def move_forward():
     move()
+    return {"status": "published"}
+
+
+@app.post("/look-left")
+async def look_left():
+    turn()
+    return {"status": "published"}
+
+
+@app.post("/look-right")
+async def look_right():
+    turn(direction="right")
+    return {"status": "published"}
+
+
+@app.post("/look-back")
+async def look_behind():
+    turn(direction="back")
     return {"status": "published"}
 
 

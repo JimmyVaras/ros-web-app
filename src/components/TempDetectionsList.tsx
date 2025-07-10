@@ -154,7 +154,7 @@ export default function TempDetectionsList({ robot_id }: TempDetectionsListProps
   return (
     <section style={{ marginTop: '1rem' }} className="container">
       {tempDetections.length === 0 ? (
-        <p>No temporary detections found.</p>
+        <></>
       ) : (
         <div className="grid" style={{ gridTemplateColumns: '1fr', gap: '0rem' }}>
           <button

@@ -100,9 +100,9 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
 
     for marker in data.markers:
         new_pos = {
-            "x": marker.position.x,
-            "y": marker.position.y,
-            "z": marker.position.z
+            "x": marker.position_obj.x,
+            "y": marker.position_obj.y,
+            "z": marker.position_obj.z
         }
 
         # Buscar detecciones existentes con el mismo label
@@ -112,7 +112,27 @@ def save_markers(data: MarkerList, db: Session = Depends(get_db)):
         duplicate = any(is_close(d.position_obj, new_pos) for d in existing_detections)
 
         if not duplicate:
-            detection = Detection(label=marker.name, position_obj=new_pos, robot_id=marker.robot_id)
+            # Calcular room_id
+            room_id = 0
+            x, y = new_pos["x"], new_pos["y"]
+            rooms = db.query(Room).all()
+            for room in rooms:
+                start = room.position_start
+                end = room.position_end
+
+                if (start["x"] <= x <= end["x"] or end["x"] <= x <= start["x"]) and \
+                        (start["y"] <= y <= end["y"] or end["y"] <= y <= start["y"]):
+                    room_id = room.id
+                    break
+
+            # Guardar detección
+            detection = Detection(
+                label=marker.name,
+                position_obj=new_pos,
+                position_nav=marker.position_nav.__json__(),
+                robot_id=marker.robot_id,
+                room_id=room_id
+            )
             db.add(detection)
             added_count += 1
 

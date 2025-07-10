@@ -99,17 +99,29 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
             setFailedMatch(`No se encontró el objeto "${label}"`);
           }
         }
-      },{
+      },
+      {
         pattern: /avanza/,
         action: () => {
           handleMoveForward();
         }
       },
       {
-        pattern: /vuelta 360/,
+        pattern: /(?:gira|mira) izquierda/,
         action: () => {
-          // TODO
-          console.log("Comando: vuelta 360");
+          handleLook("left");
+        }
+      },
+      {
+        pattern: /(?:gira|mira) derecha/,
+        action: () => {
+          handleLook("right");
+        }
+      },
+      {
+        pattern: /(?:gira|mira) (?:atrás|detrás)/,
+        action: () => {
+          handleLook("back");
         }
       },
       {
@@ -244,6 +256,30 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     }
   };
 
+  const handleLook = async (direction: "left" | "right" | "back") => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/ros/look-${direction}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+      });
+
+      if (!response.ok) {
+        setError(`Fallo al mirar hacia ${direction}`);
+      } else {
+        setFailedMatch("");
+        setGoalSent(`Mirando hacia ${direction}`);
+      }
+
+      await fetchDetections();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : `Fallo al mirar hacia ${direction}`);
+    }
+  };
+
+
   const patrol = async (isStart: boolean) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
@@ -298,7 +334,15 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
     };
 
     recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-      console.error('Speech recognition error:', e);
+      // Si el error es "no-speech", apaga el micrófono.
+      if (e.error === 'no-speech') {
+        console.warn('No se detectó habla. Apagando micrófono.');
+        setIsListening(false);
+      } else {
+        // Para otros errores, los muestra en la consola y en la UI.
+        setFailedMatch(`Error de reconocimiento: ${e.error}`);
+        console.error('Speech recognition error:', e);
+      }
     };
 
     setRecognitionInstance(recognition);
@@ -396,8 +440,7 @@ export default function VoiceCommands({ robot_id }: VoiceCommandsProps) {
           <ul>
             <li><strong>Avanza</strong> - Mover hacia adelante aprox. 1 metro</li>
             <li><strong>Retrocede</strong> - Mover hacia atrás aprox. 1 metro</li>
-            <li><strong>Vuelta 360</strong> - Dar una vuelta completa para mirar alrededor</li>
-            <li><strong>Mira a la izquierda/derecha/detrás</strong> - Gira el robot en esa dirección</li>
+            <li><strong>Mira/gira izquierda/derecha/detrás</strong> - Gira el robot en esa dirección</li>
           </ul>
 
           <h5>Patrulla:</h5>
