@@ -38,8 +38,6 @@ export default function DetectionsPage() {
   const [rooms, setRooms] = useState<Room[]>([])
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isListening, setIsListening] = useState(false);
-  const [recognitionInstance, setRecognitionInstance] = useState<SpeechRecognition | null>(null);
   const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000';
 
 
@@ -128,55 +126,6 @@ export default function DetectionsPage() {
     fetchDetections();
     fetchRooms();
   }, []);
-
-  useEffect(() => {
-    const SpeechRecognition = window.SpeechRecognition || (window as Window).webkitSpeechRecognition;
-    if (!SpeechRecognition) {
-      console.warn('Speech recognition not supported in this browser.');
-      return;
-    }
-
-    const recognition = new SpeechRecognition();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-      console.log("Heard:", transcript);
-
-      const navigateMatch = transcript.match(/navigate to (.+)/);
-      if (navigateMatch) {
-        const label = navigateMatch[1].toLowerCase();
-        const match = detections.find(d => d.label.toLowerCase() === label);
-        if (match) {
-          handleNavigate(match.id);
-        } else {
-          console.warn(`No detection found with label "${label}"`);
-        }
-      }
-    };
-
-    recognition.onerror = (e: SpeechRecognitionErrorEvent) => {
-      console.error('Speech recognition error:', e);
-    };
-
-    setRecognitionInstance(recognition);
-
-    return () => recognition.stop();
-  }, [detections]);
-
-  useEffect(() => {
-    if (!recognitionInstance) return;
-
-    if (isListening) {
-      recognitionInstance.start();
-      console.log("Voice recognition started");
-    } else {
-      recognitionInstance.stop();
-      console.log("Voice recognition stopped");
-    }
-  }, [isListening, recognitionInstance]);
 
 
   if (isLoading) return (
