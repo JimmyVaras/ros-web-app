@@ -30,6 +30,8 @@ This web application provides a full-featured user interface to remotely monitor
 
 The project is built with a distributed architecture that securely connects a modern web app to a local ROS system.
 
+<img width="2610" height="1865" alt="arquitectura" src="https://github.com/user-attachments/assets/f657c265-66b0-451e-9db9-c8026114429c" />
+
 ## ✨ Features
 
 * **Centralized Control Panel**: Main interface for interacting with the robot, with support for multiple robots per user.
@@ -44,6 +46,8 @@ The project is built with a distributed architecture that securely connects a mo
 * **Patrol Control**: Start and stop an autonomous patrol routine from the web interface.
 * **Responsive Design**: The interface adapts to both desktop and mobile devices.
 
+<img height="400" alt="landing-page" src="https://github.com/user-attachments/assets/e3850890-f59a-446d-ab35-c73cc3560360" />
+
 ## 🏛️ Architecture
 
 The system is divided into two main components:
@@ -52,6 +56,9 @@ The system is divided into two main components:
     * **Frontend**: A **Next.js** app deployed on Vercel.
     * **Backend**: A **REST API** built with **FastAPI** (Python) and deployed on Render.
     * **Database**: A **PostgreSQL** database hosted on Supabase, storing user, robot, and detection data.
+  
+<img height="600" alt="db-schema" src="https://github.com/user-attachments/assets/9347d5e4-76ef-4962-bb6c-c2d0ea173600" />
+
 
 2. **Local Server (on the robot’s network)**:
     * **Nexo API**: An intermediate component (FastAPI-based API) running on the same machine as ROS. It acts as a bridge, translating HTTP requests into ROS commands via **ROSBridge**.
@@ -65,6 +72,9 @@ The system is divided into two main components:
 * **Intermediate API (`Nexo API`)**: FastAPI, `roslibpy` for communication with ROSBridge
 * **Deployment**: Vercel (Frontend), Render (Backend), Supabase (DB)
 * **Secure Communication**: Azure Dev Tunnels
+
+<img height="600" alt="mobile" src="https://github.com/user-attachments/assets/6eb0178c-f59d-46f3-95bc-4487dc4b002e" />
+
 
 ## 📦 Project Structure
 
