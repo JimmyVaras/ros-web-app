@@ -21,3 +21,105 @@ Este paquete contiene el código desarrollado (del sistema ROS) para mi Trabajo 
 - **Frontend**: Directorio base del repositorio
 - **Backend Web App**: (en /backend) Endpoints para la comunicación entre el frontend, la base de datos el sistema ROS a través del túnel protegido.
 - **Backend APINexo**: (en /APINexo) Endpoints para la comunicación con el sistema ROS a través de una API convencional. Sus endpoints son una forma sencilla de interactuar con topics de ROS en forma de peticiones HTTP tradicionales.
+
+---
+
+# Remote Control Web Application for ROS Robot
+
+This web application provides a full-featured user interface to remotely monitor and control a mobile robot running **ROS (Robot Operating System)**. It enables real-time video surveillance, interactive navigation, and voice control.
+
+The project is built with a distributed architecture that securely connects a modern web app to a local ROS system.
+
+## ✨ Features
+
+* **Centralized Control Panel**: Main interface for interacting with the robot, with support for multiple robots per user.
+* **Secure Authentication**: Login system based on **JWT** to protect access.
+* **Real-Time Video**: View the robot’s camera feed via an **MJPEG** stream, with a toggle to enable/disable the stream and save bandwidth.
+* **Click-to-Navigate Map**: Send navigation goals to the robot simply by clicking on a 2D map of the environment.
+* **Voice Control**: Uses the browser’s `SpeechRecognition` API to interpret natural language commands (e.g., "Go to the chair in the living room").
+* **Detected Objects Management**:
+    * Displays a list of all objects the robot has detected and stored.
+    * Allows sending the robot to any object in the list.
+    * Allows deleting detections from the database.
+* **Patrol Control**: Start and stop an autonomous patrol routine from the web interface.
+* **Responsive Design**: The interface adapts to both desktop and mobile devices.
+
+## 🏛️ Architecture
+
+The system is divided into two main components:
+
+1. **Cloud Application**:
+    * **Frontend**: A **Next.js** app deployed on Vercel.
+    * **Backend**: A **REST API** built with **FastAPI** (Python) and deployed on Render.
+    * **Database**: A **PostgreSQL** database hosted on Supabase, storing user, robot, and detection data.
+
+2. **Local Server (on the robot’s network)**:
+    * **Nexo API**: An intermediate component (FastAPI-based API) running on the same machine as ROS. It acts as a bridge, translating HTTP requests into ROS commands via **ROSBridge**.
+    * **Secure Tunnel**: A service like **Azure Dev Tunnels** is used to securely expose the `Nexo API` to the Internet, enabling communication with the cloud backend.
+
+## 🛠️ Tech Stack
+
+* **Frontend**: Next.js, React, PicoCSS
+* **Backend**: FastAPI (Python), SQLAlchemy, JWT
+* **Database**: PostgreSQL
+* **Intermediate API (`Nexo API`)**: FastAPI, `roslibpy` for communication with ROSBridge
+* **Deployment**: Vercel (Frontend), Render (Backend), Supabase (DB)
+* **Secure Communication**: Azure Dev Tunnels
+
+## 📦 Project Structure
+
+This repository is organized as a monorepo with the following main components:
+
+- `/frontend`: Next.js web application code.
+- `/backend`: Main FastAPI backend code.
+- `/api-nexo`: Intermediate API code that connects to ROS.
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+* Node.js and npm for the frontend
+* Python 3.8+ and pip for the backend and Nexo API
+* An account with a tunneling service (e.g., Azure Dev Tunnels)
+* The [robot’s ROS system](#) (link to your other repository) must be running
+
+### Installation
+
+1. **Clone the repository**:
+    ```bash
+    git clone https://github.com/YOUR_USERNAME/YOUR_REPOSITORY.git
+    cd YOUR_REPOSITORY
+    ```
+2. **Configure each component**:
+    * For `frontend`, `backend`, and `api-nexo`, navigate to their respective directories.
+    * Create a `.env` file from the `.env.example` and fill in the environment variables (API URLs, secret keys, tunnel token, etc.).
+    * Install dependencies:
+        ```bash
+        # Frontend
+        cd frontend && npm install
+
+        # Backend and Nexo API
+        cd ../backend && pip install -r requirements.txt
+        cd ../api-nexo && pip install -r requirements.txt
+        ```
+
+### Running the System
+
+1. **Start the ROS System**: Make sure all robot nodes are running.
+2. **Start the Nexo API**: On the robot's machine, run the intermediate API:
+    ```bash
+    cd api-nexo
+    uvicorn main:app --host 0.0.0.0 --port 8001
+    ```
+3. **Create a Secure Tunnel**: Expose port `8001` of the Nexo API to the Internet using your tunneling service.
+4. **Start the Main Backend**: Run it on your server or locally. Ensure that the `NEXO_API_URL` environment variable points to the public URL of your tunnel.
+    ```bash
+    cd backend
+    uvicorn main:app --host 0.0.0.0 --port 8000
+    ```
+5. **Start the Frontend**:
+    ```bash
+    cd frontend
+    npm run dev
+    ```
+6. Open your browser at `http://localhost:3000` to access the application.
